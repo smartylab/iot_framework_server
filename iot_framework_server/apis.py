@@ -1,0 +1,242 @@
+import json
+import logging
+import time
+from pprint import pprint
+
+from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
+from django.views.decorators.csrf import csrf_exempt
+from django.core.cache import cache
+
+from . import constants, db_manager
+# import constants, db_manager
+
+logging.basicConfig(
+    format="[%(name)s][%(asctime)s] %(message)s",
+    handlers=[logging.StreamHandler()],
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
+
+
+@csrf_exempt
+def handle_agent_mgt(request):
+    pass
+
+@csrf_exempt
+def handle_user_mgt(request):
+    db = db_manager.DbManager()
+    try:
+        if request.method == 'POST':
+            if len(request.body) == 0:
+                raise Exception(constants.MSG_NO_REQUEST_DATA)
+            user = json.loads(request.body.decode('utf-8'))
+            if not db.add_user(user):
+                raise Exception(constants.MSG_INSERT_ERROR)
+            return JsonResponse(constants.CODE_SUCCESS)
+
+        elif request.method == 'GET':
+            user_id = request.GET.get('user_id')
+            if not user_id:
+                raise Exception(constants.MSG_INVALID_PARAMETER)
+            user = db.retrieve_user(user_id)
+            return JsonResponse(dict(constants.CODE_SUCCESS,
+                                     **{'user': user}))
+
+        else:
+            raise Exception(constants.MSG_UNKNOWN_ERROR)
+
+    except Exception as e:
+        logger.exception(e)
+        return JsonResponse(dict(constants.CODE_FAILURE, **{'msg': str(e)}))
+    finally:
+        db.close()
+
+@csrf_exempt
+def handle_device_model_mgt(request):
+    db = db_manager.DbManager()
+    try:
+        if request.method == 'POST':
+            if len(request.body) == 0:
+                raise Exception(constants.MSG_NO_REQUEST_DATA)
+            device_model = json.loads(request.body.decode('utf-8'))
+            if not db.add_device_model(device_model):
+                raise Exception(constants.MSG_INSERT_ERROR)
+            return JsonResponse(constants.CODE_SUCCESS)
+
+        elif request.method == 'GET':
+            model_id = request.GET.get('model_id')
+            model_name = request.GET.get('model_name')
+            model_list = db.retrieve_device_model(model_id=model_id,
+                                                  model_name=model_name)
+            return JsonResponse(dict(constants.CODE_SUCCESS,
+                                     **{'model_list': model_list}))
+
+        else:
+            raise Exception(constants.MSG_UNKNOWN_ERROR)
+
+    except Exception as e:
+        logger.exception(e)
+        return JsonResponse(dict(constants.CODE_FAILURE, **{'msg': str(e)}))
+    finally:
+        db.close()
+
+
+@csrf_exempt
+def handle_device_item_mgt(request):
+    db = db_manager.DbManager()
+    try:
+        if request.method == 'POST':
+            if len(request.body) == 0:
+                raise Exception(constants.MSG_NO_REQUEST_DATA)
+            device_item = json.loads(request.body.decode('utf-8'))
+            item_id = db.add_device_item(device_item)
+            if not item_id:
+                raise Exception(constants.MSG_INSERT_ERROR)
+            return JsonResponse(constants.CODE_SUCCESS, **{'item_id': item_id})
+
+        elif request.method == 'GET':
+            item_id = request.GET.get('item_id')
+            model_id = request.GET.get('model_id')
+            user_id = request.GET.get('user_id')
+            item_name = request.GET.get('item_name')
+            item_list = db.retrieve_device_item(item_id=item_id, model_id=model_id,
+                                                user_id=user_id, item_name=item_name)
+            return JsonResponse(dict(constants.CODE_SUCCESS,
+                                     **{'item_list': item_list}))
+
+        else:
+            raise Exception(constants.MSG_UNKNOWN_ERROR)
+
+    except Exception as e:
+        logger.exception(e)
+        return JsonResponse(dict(constants.CODE_FAILURE, **{'msg': str(e)}))
+    finally:
+        db.close()
+
+
+@csrf_exempt
+def handle_context_mgt(request):
+    db = db_manager.DbManager()
+    try:
+        if request.method == 'POST':
+            if len(request.body) == 0:
+                raise Exception(constants.MSG_NO_REQUEST_DATA)
+            data = json.loads(request.body.decode('utf-8'))
+
+            device_item_id = data.get('device_item_id')
+            context = data.get('context')
+
+            if not device_item_id or not context:
+                raise Exception(constants.MSG_INVALID_PARAMETER)
+
+            context_id = db.add_context(device_item_id, context)
+            if not context_id:
+                raise Exception(constants.MSG_INSERT_ERROR)
+
+            context_data = context.get('data')
+            if context_data is None:
+                raise Exception(constants.MSG_NO_DATA)
+
+            if isinstance(context_data, list):
+                for data_item in context_data:
+                    data_item['context_id'] = context_id
+                    if not db.add_context_data(data_item):
+                        raise Exception(constants.MSG_INSERT_ERROR)
+            else:
+                if not db.add_context_data(context_data):
+                    raise Exception(constants.MSG_INSERT_ERROR)
+            return JsonResponse(constants.CODE_SUCCESS)
+
+        elif request.method == 'GET':
+            context_id = request.GET.get('context_id')
+            device_item_id = request.GET.get('device_item_id')
+            context_type = request.GET.get('type')
+            if not context_id and not device_item_id and not type:
+                raise Exception(constants.MSG_INVALID_PARAMETER)
+
+            context_list = db.retrieve_context(context_id=context_id,
+                                               device_item_id=device_item_id,
+                                               type=context_type)
+            for context in context_list:
+                context_data = db.retrieve_context_data(context_id=context['context_id'])
+                context['data'] = context_data
+
+            return JsonResponse(dict(constants.CODE_SUCCESS,
+                                     **{'context_list': context_list}))
+        else:
+            raise Exception(constants.MSG_UNKNOWN_ERROR)
+
+    except Exception as e:
+        logger.exception(e)
+        return JsonResponse(dict(constants.CODE_FAILURE, **{'msg': str(e)}))
+    finally:
+        db.close()
+
+@csrf_exempt
+def handle_series_context_mgt(request):
+    db = db_manager.DbManager()
+    try:
+        if request.method == 'POST':
+            if len(request.body) == 0:
+                raise Exception(constants.MSG_NO_REQUEST_DATA)
+            data = json.loads(request.body.decode('utf-8'))
+
+            device_item_id = data.get('device_item_id')
+            context = data.get('series_context')
+
+            if not device_item_id or not context:
+                raise Exception(constants.MSG_INVALID_PARAMETER)
+
+            if not db.add_series_context(device_item_id, context):
+                raise Exception(constants.MSG_INSERT_ERROR)
+            return JsonResponse(constants.CODE_SUCCESS)
+
+        elif request.method == 'GET':
+            context_id = request.GET.get('context_id')
+            device_item_id = request.GET.get('device_item_id')
+            context_type = request.GET.get('type')
+            if not context_id and not device_item_id and not context_type:
+                raise Exception(constants.MSG_INVALID_PARAMETER)
+
+            context_list = db.retrieve_series_context(context_id=context_id,
+                                                      device_item_id=device_item_id,
+                                                      type=context_type)
+            return JsonResponse(dict(constants.CODE_SUCCESS,
+                                     **{'series_context_list': context_list}))
+
+    except Exception as e:
+        logger.exception(e)
+        return JsonResponse(dict(constants.CODE_FAILURE, **{'msg': str(e)}))
+    finally:
+        db.close()
+
+
+@csrf_exempt
+def handle_connection_mgt(request):
+    db = db_manager.DbManager()
+    try:
+        if request.method == 'POST':
+            if len(request.body) == 0:
+                raise Exception(constants.MSG_NO_REQUEST_DATA)
+            data = json.loads(request.body.decode('utf-8'))
+
+            device_item_id = data.get('device_item_id')
+            device_item_address = data.get('device_item_address')
+            user_id = data.get('user_id')
+            password = data.get('password')
+
+            return JsonResponse(constants.CODE_SUCCESS)
+
+        elif request.method == 'DELETE':
+            device_item_id = request.GET.get('device_item_id')
+            device_item_address = request.GET.get('device_item_address')
+            user_id = request.GET.get('user_id')
+            password = request.GET.get('password')
+
+            return JsonResponse(dict(constants.CODE_SUCCESS))
+
+    except Exception as e:
+        logger.exception(e)
+        return JsonResponse(dict(constants.CODE_FAILURE, **{'msg': str(e)}))
+    finally:
+        db.close()

@@ -1,0 +1,49 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>IoT Framework Test Page</title>
+</head>
+<body>
+
+<div>
+    <button id="btnContextTest">Add Context</button>
+    <button id="btnContextTest2">Add Context 2</button>
+</div>
+
+<script src="{% static "lib/jquery/jquery-2.2.0.min.js" %}"></script>
+<script>
+    $('#btnContextTest').click(function() {
+        $.ajax("/api/context", {
+            method: 'POST',
+            data: '{\"device_item_id\":1, \"context\": {\"type\": \"pulse\", \"data\": [{\"sub_type\": \"pulse\", \"value\": 0.0, \"unit\": \"bpm\"}], \"time\": 1465480167877}}',
+            dataType: 'json',
+            success: function(res) {
+                console.log(res);
+            }
+        })
+    });
+
+    $('#btnContextTest2').click(function() {
+        $.ajax("/api/context", {
+            method: 'POST',
+            data: JSON.stringify({
+                'device_item_id':1,
+                'context': {
+                    'type': 'pulse',
+                    'data': [{'sub_type': 'pulse', 'value': 0.0, 'unit': 'bpm'},
+                        {'sub_type': 'pulse', 'value': 0.0, 'unit': '%'}],
+                    'time': 1465480167877}
+                }),
+            dataType: 'json',
+            success: function(res) {
+                console.log(res);
+            }
+        })
+    });
+</script>
+
+</body>
+</html>
