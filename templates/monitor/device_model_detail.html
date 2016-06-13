@@ -64,21 +64,26 @@
                 </div>
 
                 <div class="form-btns-container row">
-                    <div id="btnFormCancel" class="col-xs-6 col-sm-6 col-md-3 col-md-offset-3 form-button">
+                {% if device_model %}
+                    <div id="btnFormCancel" class="col-xs-6 col-sm-6 col-md-3 col-md-offset-1 form-button">
                         <a class="btn btn-lg btn-warning btn-block onloading"
-                           onclick="javascript:location.replace('{% url 'monitor:device_model' %}');">
-                            {% if device_model %}Back
-                            {% else %}Cancel
-                            {% endif %}
-                        </a>
+                           onclick="javascript:location.replace('{% url 'monitor:device_model' %}');">Back</a>
+                    </div>
+                    <div id="btnFormDelete" class="col-xs-6 col-sm-6 col-md-3 form-button">
+                        <button class="btn btn-lg btn-danger btn-block" type="button">Delete</button>
+                    </div>
+                    <div id="btnFormConfirm" class="col-xs-6 col-sm-6 col-md-4 form-button">
+                        <button class="btn btn-lg btn-primary btn-block" type="submit">Update</button>
+                    </div>
+                {% else %}
+                    <div id="btnFormCancel" class="col-xs-6 col-sm-6 col-md-3 col-md-offset-3 form-button">
+                        <a class="btn btn-lg btn-warning btn-block"
+                           onclick="javascript:history.back();">Cancel</a>
                     </div>
                     <div id="btnFormConfirm" class="col-xs-6 col-sm-6 col-md-3 form-button">
-                        <button class="btn btn-lg btn-primary btn-block" type="submit">
-                            {% if device_model %}Update
-                            {% else %}Add
-                            {% endif %}
-                        </button>
+                        <button class="btn btn-lg btn-primary btn-block" type="submit">Add</button>
                     </div>
+                {% endif %}
                 </div>
             </form>
         </div>
@@ -114,7 +119,7 @@ $(document).ready(function () {
                         $.LoadingOverlay('hide');
                         openModal("Successfully updated.", "Updating Success");
                     } else {
-                        openModal(res['msg'], "Updating New Device Failed")
+                        openModal(res['msg'], "Updating New Device Model Failed")
                     }
                 }
             });
@@ -132,16 +137,33 @@ $(document).ready(function () {
                         $.LoadingOverlay('show');
                         location.href = "{% url 'monitor:device_model' %}"
                     } else {
-                        openModal(res['msg'], "Adding New Device Failed")
+                        openModal(res['msg'], "Adding New Device Model Failed")
                     }
                 }
             });
         {% endif %}
-
     });
+
+$('#btnFormDelete').click(function() {
+        $.ajax("/api/device_model", {
+            method: 'DELETE',
+            data: JSON.stringify({
+                'model_id': {{ device_model.model_id }}
+            }),
+            dataType: 'json',
+            success: function (res) {
+                $.LoadingOverlay('hide');
+                if (res['code'] == 'SUCCESS') {
+                    $.LoadingOverlay('show');
+                    location.href = "{% url 'monitor:device_model' %}"
+                } else {
+                    openModal(res['msg'], "Deleting Device Model Failed")
+                }
+            }
+        });
+    })
 });
 </script>
-
 
 </body>
 </html>

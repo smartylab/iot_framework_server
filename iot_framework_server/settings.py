@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'iot_framework_monitor.templatetags.my_filters',
+    'iot_framework_server.templatetags.my_filters',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -66,6 +66,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': {
+                'my_filters': 'iot_framework_server.templatetags.my_filters'
+            }
         },
     },
 ]

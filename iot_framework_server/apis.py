@@ -79,6 +79,15 @@ def handle_device_model_mgt(request):
             return JsonResponse(dict(constants.CODE_SUCCESS,
                                      **{'model_list': model_list}))
 
+        elif request.method == 'DELETE':
+            if len(request.body) == 0:
+                raise Exception(constants.MSG_NO_REQUEST_DATA)
+            data = json.loads(request.body.decode('utf-8'))
+            model_id = data.get('model_id')
+            if not db.delete_device_model( model_id):
+                raise Exception(constants.MSG_DELETE_ERROR)
+            return JsonResponse(constants.CODE_SUCCESS)
+
         else:
             raise Exception(constants.MSG_UNKNOWN_ERROR)
 
@@ -100,7 +109,9 @@ def handle_device_item_mgt(request):
             item_id = db.add_device_item(device_item)
             if not item_id:
                 raise Exception(constants.MSG_INSERT_ERROR)
-            return JsonResponse(constants.CODE_SUCCESS, **{'item_id': item_id})
+            print (item_id)
+            return JsonResponse(dict(constants.CODE_SUCCESS,
+                                     **{'item_id': item_id}))
 
         elif request.method == 'PUT':
             if len(request.body) == 0:
@@ -119,6 +130,15 @@ def handle_device_item_mgt(request):
                                                 user_id=user_id, item_name=item_name)
             return JsonResponse(dict(constants.CODE_SUCCESS,
                                      **{'item_list': item_list}))
+
+        elif request.method == 'DELETE':
+            if len(request.body) == 0:
+                raise Exception(constants.MSG_NO_REQUEST_DATA)
+            data = json.loads(request.body.decode('utf-8'))
+            item_id = data.get('item_id')
+            if not db.delete_device_item(item_id):
+                raise Exception(constants.MSG_DELETE_ERROR)
+            return JsonResponse(constants.CODE_SUCCESS)
 
         else:
             raise Exception(constants.MSG_UNKNOWN_ERROR)
@@ -161,6 +181,7 @@ def handle_context_mgt(request):
                     if not db.add_context_data(data_item):
                         raise Exception(constants.MSG_INSERT_ERROR)
             else:
+                context_data['context_id'] = context_id
                 if not db.add_context_data(context_data):
                     raise Exception(constants.MSG_INSERT_ERROR)
             return JsonResponse(constants.CODE_SUCCESS)

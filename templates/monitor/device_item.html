@@ -51,7 +51,15 @@
                         {title: "User ID"},
                         {title: "Address"},
                         {title: "Name"},
-                        {title: "Connection"},
+                        {
+                            title: "Connection",
+                            render: {
+                                "display": function (data) {
+                                    if (data) return "Connected";
+                                    else return "Disconnected";
+                                }
+                            }
+                        },
                     ]
                 });
         $('#dataTable tbody').on('click', 'tr', function () {

@@ -34,6 +34,11 @@
                         <div class="col-sm-9 ">
                             <select class="form-control" id="modelId" name="modelId" required>
                                 <option selected disabled value="" >Choose Device Model</option>
+                                {% for model in model_list %}
+                                    <option value="{{ model.model_id }}">
+                                        [{{ model.model_id }}] {{ model.model_name }}
+                                    </option>
+                                {% endfor %}
                             </select>
                         </div>
                     </div>
@@ -43,7 +48,9 @@
                         <div class="col-sm-9">
                             <select class="form-control" id="userId" name="userId" required>
                                 <option selected disabled value="" >Choose User</option>
-
+                                {% for user in user_list %}
+                                    <option>{{ user.user_id }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                     </div>
@@ -58,21 +65,26 @@
                 </div>
 
                 <div class="form-btns-container row">
-                    <div id="btnFormCancel" class="col-xs-6 col-sm-6 col-md-3 col-md-offset-3 form-button">
+                {% if device_item %}
+                    <div id="btnFormCancel" class="col-xs-6 col-sm-6 col-md-3 col-md-offset-1 form-button">
                         <a class="btn btn-lg btn-warning btn-block onloading"
-                           onclick="javascript:location.replace('{% url 'monitor:device_model' %}');">
-                            {% if device_item %}Back
-                            {% else %}Cancel
-                            {% endif %}
-                        </a>
+                           onclick="javascript:location.replace('{% url 'monitor:device_item' %}');">Back</a>
+                    </div>
+                    <div id="btnFormDelete" class="col-xs-6 col-sm-6 col-md-3 form-button">
+                        <button class="btn btn-lg btn-danger btn-block" type="button">Delete</button>
+                    </div>
+                    <div id="btnFormConfirm" class="col-xs-6 col-sm-6 col-md-4 form-button">
+                        <button class="btn btn-lg btn-primary btn-block" type="submit">Update</button>
+                    </div>
+                {% else %}
+                    <div id="btnFormCancel" class="col-xs-6 col-sm-6 col-md-3 col-md-offset-3 form-button">
+                        <a class="btn btn-lg btn-warning btn-block"
+                           onclick="javascript:history.back();">Cancel</a>
                     </div>
                     <div id="btnFormConfirm" class="col-xs-6 col-sm-6 col-md-3 form-button">
-                        <button class="btn btn-lg btn-primary btn-block" type="submit">
-                            {% if device_item %}Update
-                            {% else %}Add
-                            {% endif %}
-                        </button>
+                        <button class="btn btn-lg btn-primary btn-block" type="submit">Add</button>
                     </div>
+                {% endif %}
                 </div>
             </form>
         </div>
@@ -84,8 +96,12 @@
 <!-- custom javascript -->
 <script>
 {% if device_item %}
-    $('#modelName').val("{{ device_model.model_name }}");
-    $('#networkProtocol').val("{{ device_model.model_network_protocol }}");
+    {% if device_item.item_name %}
+        $('#itemName').val("{{ device_item.item_name }}");
+    {% endif %}
+    $('#modelId').val("{{ device_item.model_id }}");
+    $('#userId').val("{{ device_item.user_id }}");
+    $('#address').val("{{ device_item.item_address }}");
 {% endif %}
 
 $(document).ready(function () {
@@ -93,44 +109,74 @@ $(document).ready(function () {
         e.preventDefault();
         $.LoadingOverlay('show');
 
-        {% if device_model %}
-            $.ajax("/api/device_model", {
+        {% if device_item %}
+
+            {% if device_item.connected %}
+            $.LoadingOverlay('hide');
+            openModal("Connected device item cannot update the information.<br/> " +
+                    "Please disconnect first.", "Updating Failed");
+            {% else %}
+            $.ajax("/api/device_item", {
                 method: 'PUT',
                 data: JSON.stringify({
-                    'model_id': {{ device_item.model_id }},
-                    'model_name' : $('#modelName').val(),
-                    'model_network_protocol': $('#networkProtocol').val()
+                    'item_id': {{ device_item.item_id }},
+                    'model_id' : $('#modelId').val(),
+                    'user_id': $('#userId').val(),
+                    'item_name': $('#itemName').val(),
+                    'item_address': $('#address').val()
                 }),
                 dataType: 'json',
                 success: function (res) {
                     $.LoadingOverlay('hide');
                     if (res['code'] == 'SUCCESS') {
                         $.LoadingOverlay('hide');
+                        openModal("Successfully updated.", "Updating Success");
                     } else {
-                        openModal(res['msg'], "Updating New Device Failed")
+                        openModal(res['msg'], "Updating New Device Item Failed")
                     }
                 }
             });
+            {% endif %}
         {% else %}
-            $.ajax("/api/device_model", {
+            $.ajax("/api/device_item", {
                 method: 'POST',
                 data: JSON.stringify({
-                    'model_name' : $('#modelName').val(),
-                    'model_network_protocol': $('#networkProtocol').val()
+                    'model_id' : $('#modelId').val(),
+                    'user_id': $('#userId').val(),
+                    'item_name': $('#itemName').val(),
+                    'item_address': $('#address').val()
                 }),
                 dataType: 'json',
                 success: function (res) {
                     $.LoadingOverlay('hide');
                     if (res['code'] == 'SUCCESS') {
                         $.LoadingOverlay('show');
-                        location.href = "{% url 'monitor:device_model' %}"
+                        location.href = "{% url 'monitor:device_item' %}"
                     } else {
-                        openModal(res['msg'], "Adding New Device Failed")
+                        openModal(res['msg'], "Adding New Device Item Failed")
                     }
                 }
             });
         {% endif %}
+    });
 
+    $('#btnFormDelete').click(function() {
+        $.ajax("/api/device_item", {
+            method: 'DELETE',
+            data: JSON.stringify({
+                'item_id': {{ device_item.item_id }}
+            }),
+            dataType: 'json',
+            success: function (res) {
+                $.LoadingOverlay('hide');
+                if (res['code'] == 'SUCCESS') {
+                    $.LoadingOverlay('show');
+                    location.href = "{% url 'monitor:device_item' %}"
+                } else {
+                    openModal(res['msg'], "Deleting Device Item Failed")
+                }
+            }
+        });
     });
 });
 </script>

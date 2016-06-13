@@ -105,8 +105,19 @@ class DbManager:
                 logger.exception(e)
         return device_models
 
-    def delete_device_model(self, device_model):
-        pass
+    def delete_device_model(self, model_id):
+        if_deleted = False
+        query = "DELETE FROM device_model WHERE model_id=%s"
+        with self.connector.cursor() as cursor:
+            try:
+                cursor.execute(query, model_id)
+                self.connector.commit()
+                row_count = cursor.rowcount
+                if row_count > 0:
+                    if_deleted = True
+            except Exception as e:
+                logger.exception(e)
+        return if_deleted
 
     def add_device_item(self, device_item):
         is_inserted = False
@@ -247,8 +258,19 @@ class DbManager:
                 logger.exception(e)
         return device_items
 
-    def delete_device_item(self, device_item):
-        pass
+    def delete_device_item(self, item_id):
+        if_deleted = False
+        query = "DELETE FROM device_item WHERE item_id=%s"
+        with self.connector.cursor() as cursor:
+            try:
+                cursor.execute(query, item_id)
+                self.connector.commit()
+                row_count = cursor.rowcount
+                if row_count > 0:
+                    if_deleted = True
+            except Exception as e:
+                logger.exception(e)
+        return if_deleted
 
     def add_user(self, user):
         is_inserted = False
@@ -267,7 +289,19 @@ class DbManager:
         return is_inserted
 
     def update_user(self, user):
-        pass
+        is_updated = False
+        query = "UPDATE user SET user_name=%(user_name)s, password=%(password)s " \
+                "WHERE user_id=%(user_id)s"
+        with self.connector.cursor() as cursor:
+            try:
+                cursor.execute(query, user)
+                self.connector.commit()
+                row_count = cursor.rowcount
+                if row_count > 0:
+                    is_updated = True
+            except Exception as e:
+                logger.exception(e)
+        return is_updated
 
     def retrieve_user(self, user_id, password=None):
         user = None
@@ -316,8 +350,19 @@ class DbManager:
                 logger.exception(e)
         return user_list
 
-    def delete_user(self, user_id):
-        pass
+    def delete_user(self, user_id, password):
+        if_deleted = False
+        query = "DELETE FROM user WHERE user_id=%s and password=%s"
+        with self.connector.cursor() as cursor:
+            try:
+                cursor.execute(query, user_id)
+                self.connector.commit()
+                row_count = cursor.rowcount
+                if row_count > 0:
+                    if_deleted = True
+            except Exception as e:
+                logger.exception(e)
+        return if_deleted
 
     def check_user_id(self, user_id):
         is_existed = False
