@@ -1,6 +1,7 @@
 import time, json
 import pymysql
 import logging
+from . import constants
 
 logging.basicConfig(
     format="[%(name)s][%(asctime)s] %(message)s",
@@ -131,49 +132,103 @@ class DbManager:
         return is_inserted
 
     def update_device_item(self, device_item):
-        pass
+        is_updated = False
+        query = "UPDATE device_item SET model_id=%(model_id)s, user_id=%(user_id)s, " \
+                "item_name=%(item_name)s, item_address=%(item_address)s " \
+                "WHERE item_id=%(item_id)s"
 
-    def retrieve_device_item(self, item_id=None, model_id=None, user_id=None, item_name=None):
+        device_item.setdefault('item_name', None)
+        # device_item.setdefault('item_address', None)
+
+        with self.connector.cursor() as cursor:
+            try:
+                cursor.execute(query, device_item)
+                self.connector.commit()
+                row_count = cursor.rowcount
+                if row_count > 0:
+                    is_updated = True
+            except Exception as e:
+                logger.exception(e)
+        return is_updated
+
+    def update_device_connection(self, item_id=None, item_address=None, connection=False):
+        is_updated = False
+        query = None
+        select_values = None
+        connection = int(connection)
+
+        if item_id is not None:
+            query = "UPDATE device_item SET connected=%s WHERE item_id=%s"
+            select_values = (connection, item_id)
+        elif item_address is not None:
+            query = "UPDATE device_item SET connected=%s WHERE item_address=%s"
+            select_values = (connection, item_id)
+
+        with self.connector.cursor() as cursor:
+            try:
+                cursor.execute(query, select_values)
+                self.connector.commit()
+                row_count = cursor.rowcount
+                if row_count > 0:
+                    is_updated = True
+            except Exception as e:
+                logger.exception(e)
+        return is_updated
+
+    def retrieve_device_item(self, item_id=None, model_id=None, user_id=None,
+                             item_name=None, item_address=None):
         device_items = []
         query = None
         select_values = None
 
-        if item_id is not None:
-            query = "SELECT item_id, model_id, user_id, " \
-                    "item_name, item_address FROM device_item WHERE item_id=%s"
+        if item_id is not None and user_id is not None:
+            query = "SELECT item_id, model_id, user_id, item_name, item_address, connected " \
+                    "FROM device_item WHERE item_id=%s and user_id=%s"
+            select_values = (item_id, user_id)
+        elif item_address is not None and user_id is not None:
+            query = "SELECT item_id, model_id, user_id, item_name, item_address, connected " \
+                    "FROM device_item WHERE item_address=%s and user_id=%s"
+            select_values = (item_address, user_id)
+        elif item_id is not None:
+            query = "SELECT item_id, model_id, user_id, item_name, item_address, connected " \
+                    "FROM device_item WHERE item_id=%s"
             select_values = item_id
+        elif item_address is not None:
+            query = "SELECT item_id, model_id, user_id, item_name, item_address, connected " \
+                    "FROM device_item WHERE item_address=%s"
+            select_values = item_address
         elif user_id is not None and model_id is not None and item_name is not None:
-            query = "SELECT item_id, model_id, user_id, " \
-                    "item_name, item_address FROM device_item WHERE user_id=%s and model_id=%s " \
+            query = "SELECT item_id, model_id, user_id, item_name, item_address, connected " \
+                    "FROM device_item WHERE user_id=%s and model_id=%s " \
                     "and item_name=%s"
             select_values = (user_id, model_id, item_name)
         elif user_id is not None and item_name is not None:
-            query = "SELECT item_id, model_id, user_id, " \
-                    "item_name, item_address FROM device_item WHERE user_id=%s and item_name=%s"
+            query = "SELECT item_id, model_id, user_id, item_name, item_address, connected " \
+                    "FROM device_item WHERE user_id=%s and item_name=%s"
             select_values = (user_id, item_name)
         elif user_id is not None and model_id is not None:
-            query = "SELECT item_id, model_id, user_id, " \
-                    "item_name, item_address FROM device_item WHERE user_id=%s and model_id=%s"
+            query = "SELECT item_id, model_id, user_id, item_name, item_address, connected " \
+                    "FROM device_item WHERE user_id=%s and model_id=%s"
             select_values = (user_id, model_id)
         elif model_id is not None and item_name is not None:
-            query = "SELECT item_id, model_id, user_id, " \
-                    "item_name, item_address FROM device_item WHERE model_id=%s and item_name=%s"
+            query = "SELECT item_id, model_id, user_id, item_name, item_address, connected " \
+                    "FROM device_item WHERE model_id=%s and item_name=%s"
             select_values = (model_id, item_name)
         elif model_id is not None:
-            query = "SELECT item_id, model_id, user_id, " \
-                    "item_name, item_address FROM device_item WHERE model_id=%s"
+            query = "SELECT item_id, model_id, user_id, item_name, item_address, connected " \
+                    "FROM device_item WHERE model_id=%s"
             select_values = model_id
         elif item_name is not None:
-            query = "SELECT item_id, model_id, user_id, " \
-                    "item_name, item_address FROM device_item WHERE item_name=%s"
+            query = "SELECT item_id, model_id, user_id, item_name, item_address, connected " \
+                    "FROM device_item WHERE item_name=%s"
             select_values = item_name
         elif user_id is not None:
-            query = "SELECT item_id, model_id, user_id, " \
-                    "item_name, item_address FROM device_item WHERE user_id=%s"
+            query = "SELECT item_id, model_id, user_id, item_name, item_address, connected " \
+                    "FROM device_item WHERE user_id=%s"
             select_values = user_id
         else:
-            query = "SELECT item_id, model_id, user_id, " \
-                    "item_name, item_address FROM device_item"
+            query = "SELECT item_id, model_id, user_id, item_name, item_address, connected " \
+                    "FROM device_item"
             select_values = None
 
         with self.connector.cursor() as cursor:
@@ -186,6 +241,7 @@ class DbManager:
                     device_item['user_id'] = row[2]
                     device_item['item_name'] = row[3]
                     device_item['item_address'] = row[4]
+                    device_item['connected'] = bool(row[5])
                     device_items.append(device_item)
             except Exception as e:
                 logger.exception(e)
@@ -213,15 +269,22 @@ class DbManager:
     def update_user(self, user):
         pass
 
-    def retrieve_user(self, user_id):
+    def retrieve_user(self, user_id, password=None):
         user = None
         query = None
         select_values = None
 
-        if user_id is not None:
+        if user_id is not None and password is not None:
+            query = "SELECT user_id, user_name " \
+                    "FROM user WHERE user_id=%s and password=%s"
+            select_values = (user_id, password)
+        elif user_id is not None:
             query = "SELECT user_id, user_name " \
                     "FROM user WHERE user_id=%s"
             select_values = user_id
+        else:
+            query = "SELECT user_id, user_name FROM user"
+            select_values = None
 
         with self.connector.cursor() as cursor:
             try:
@@ -230,12 +293,45 @@ class DbManager:
                     user = dict()
                     user['user_id'] = row[0]
                     user['user_name'] = row[1]
+                    if password is not None:
+                        user['password'] = password
             except Exception as e:
                 logger.exception(e)
         return user
 
+    def retrieve_user_list(self):
+        user_list = []
+        query = "SELECT user_id, user_name FROM user " \
+                "ORDER BY user_id ASC"
+
+        with self.connector.cursor() as cursor:
+            try:
+                cursor.execute(query)
+                for row in cursor:
+                    user = dict()
+                    user['user_id'] = row[0]
+                    user['user_name'] = row[1]
+                    user_list.append(user)
+            except Exception as e:
+                logger.exception(e)
+        return user_list
+
     def delete_user(self, user_id):
         pass
+
+    def check_user_id(self, user_id):
+        is_existed = False
+        query = "SELECT * FROM user WHERE user_id=%s"
+
+        with self.connector.cursor() as cursor:
+            try:
+                cursor.execute(query, user_id)
+                row_count = cursor.rowcount
+                if row_count > 0:
+                    is_existed = True
+            except Exception as e:
+                logger.exception(e)
+        return is_existed
 
     def add_agent(self, agent):
         pass

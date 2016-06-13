@@ -1,0 +1,140 @@
+{% load staticfiles %}
+{% load my_filters %}
+
+{% include 'monitor/template_header.html' %}
+
+<!-- custom css -->
+
+
+{% include 'monitor/template_nav.html' %}
+
+<div class="container">
+    <section class="section">
+        <div class="row">
+            <div class="col-xs-12 col-title">
+                <h2 class="text-primary">
+                    {% if device_item %}Update Device Model
+                    {% else %}Add New Device Model
+                    {% endif %}
+                </h2>
+            </div>
+            <form id="addDeviceModelForm" class="col-xs-12 col-form" method="post">
+                <div class="form-container form-boxed form-horizontal row">
+
+                    <div class="col-xs-12 form-group">
+                        <label class="col-sm-3 control-label" for="itemName" >Item Name</label>
+                        <div class="col-sm-9 ">
+                            <input type="text" id="itemName" maxlength="255" name="itemName" class="form-control"
+                                   placeholder="Item Name">
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12 form-group">
+                        <label class="col-sm-3 control-label" for="modelId" >Device Model</label>
+                        <div class="col-sm-9 ">
+                            <select class="form-control" id="modelId" name="modelId" required>
+                                <option selected disabled value="" >Choose Device Model</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12 form-group">
+                        <label class="col-sm-3 control-label" for="userId" >User ID</label>
+                        <div class="col-sm-9">
+                            <select class="form-control" id="userId" name="userId" required>
+                                <option selected disabled value="" >Choose User</option>
+
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12 form-group">
+                        <label class="col-sm-3 control-label" for="address" >Network Address</label>
+                        <div class="col-sm-9 ">
+                            <input type="text" id="address" maxlength="255" name="address" class="form-control"
+                                   placeholder="Device Item's Network Address. ex) IPv4, IPv6, MAC Address, and etc.">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-btns-container row">
+                    <div id="btnFormCancel" class="col-xs-6 col-sm-6 col-md-3 col-md-offset-3 form-button">
+                        <a class="btn btn-lg btn-warning btn-block onloading"
+                           onclick="javascript:location.replace('{% url 'monitor:device_model' %}');">
+                            {% if device_item %}Back
+                            {% else %}Cancel
+                            {% endif %}
+                        </a>
+                    </div>
+                    <div id="btnFormConfirm" class="col-xs-6 col-sm-6 col-md-3 form-button">
+                        <button class="btn btn-lg btn-primary btn-block" type="submit">
+                            {% if device_item %}Update
+                            {% else %}Add
+                            {% endif %}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+
+{% include 'monitor/template_footer.html' %}
+
+<!-- custom javascript -->
+<script>
+{% if device_item %}
+    $('#modelName').val("{{ device_model.model_name }}");
+    $('#networkProtocol').val("{{ device_model.model_network_protocol }}");
+{% endif %}
+
+$(document).ready(function () {
+    $('#addDeviceModelForm').on('submit', function (e) {
+        e.preventDefault();
+        $.LoadingOverlay('show');
+
+        {% if device_model %}
+            $.ajax("/api/device_model", {
+                method: 'PUT',
+                data: JSON.stringify({
+                    'model_id': {{ device_item.model_id }},
+                    'model_name' : $('#modelName').val(),
+                    'model_network_protocol': $('#networkProtocol').val()
+                }),
+                dataType: 'json',
+                success: function (res) {
+                    $.LoadingOverlay('hide');
+                    if (res['code'] == 'SUCCESS') {
+                        $.LoadingOverlay('hide');
+                    } else {
+                        openModal(res['msg'], "Updating New Device Failed")
+                    }
+                }
+            });
+        {% else %}
+            $.ajax("/api/device_model", {
+                method: 'POST',
+                data: JSON.stringify({
+                    'model_name' : $('#modelName').val(),
+                    'model_network_protocol': $('#networkProtocol').val()
+                }),
+                dataType: 'json',
+                success: function (res) {
+                    $.LoadingOverlay('hide');
+                    if (res['code'] == 'SUCCESS') {
+                        $.LoadingOverlay('show');
+                        location.href = "{% url 'monitor:device_model' %}"
+                    } else {
+                        openModal(res['msg'], "Adding New Device Failed")
+                    }
+                }
+            });
+        {% endif %}
+
+    });
+});
+</script>
+
+
+</body>
+</html>

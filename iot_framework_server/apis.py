@@ -63,6 +63,14 @@ def handle_device_model_mgt(request):
                 raise Exception(constants.MSG_INSERT_ERROR)
             return JsonResponse(constants.CODE_SUCCESS)
 
+        if request.method == 'PUT':
+            if len(request.body) == 0:
+                raise Exception(constants.MSG_NO_REQUEST_DATA)
+            device_model = json.loads(request.body.decode('utf-8'))
+            if not db.update_device_model(device_model):
+                raise Exception(constants.MSG_UPDATE_ERROR)
+            return JsonResponse(constants.CODE_SUCCESS)
+
         elif request.method == 'GET':
             model_id = request.GET.get('model_id')
             model_name = request.GET.get('model_name')
@@ -94,6 +102,14 @@ def handle_device_item_mgt(request):
                 raise Exception(constants.MSG_INSERT_ERROR)
             return JsonResponse(constants.CODE_SUCCESS, **{'item_id': item_id})
 
+        elif request.method == 'PUT':
+            if len(request.body) == 0:
+                raise Exception(constants.MSG_NO_REQUEST_DATA)
+            device_item = json.loads(request.body.decode('utf-8'))
+            if not db.update_device_item(device_item):
+                raise Exception(constants.MSG_UPDATE_ERROR)
+            return JsonResponse(constants.CODE_SUCCESS)
+
         elif request.method == 'GET':
             item_id = request.GET.get('item_id')
             model_id = request.GET.get('model_id')
@@ -122,6 +138,8 @@ def handle_context_mgt(request):
             if len(request.body) == 0:
                 raise Exception(constants.MSG_NO_REQUEST_DATA)
             data = json.loads(request.body.decode('utf-8'))
+
+            print(data)
 
             device_item_id = data.get('device_item_id')
             context = data.get('context')
@@ -181,6 +199,8 @@ def handle_series_context_mgt(request):
                 raise Exception(constants.MSG_NO_REQUEST_DATA)
             data = json.loads(request.body.decode('utf-8'))
 
+            print(data)
+
             device_item_id = data.get('device_item_id')
             context = data.get('series_context')
 
@@ -203,6 +223,8 @@ def handle_series_context_mgt(request):
                                                       type=context_type)
             return JsonResponse(dict(constants.CODE_SUCCESS,
                                      **{'series_context_list': context_list}))
+        else:
+            raise Exception(constants.MSG_UNKNOWN_ERROR)
 
     except Exception as e:
         logger.exception(e)
@@ -222,10 +244,31 @@ def handle_connection_mgt(request):
 
             device_item_id = data.get('device_item_id')
             device_item_address = data.get('device_item_address')
-            user_id = data.get('user_id')
+            user_id = data.get('device_item_id')
             password = data.get('password')
 
-            return JsonResponse(constants.CODE_SUCCESS)
+            if device_item_id is None and device_item_address is None:
+                raise Exception(constants.MSG_INVALID_PARAMETER)
+            if user_id is None or password is None:
+                raise Exception(constants.MSG_INVALID_PARAMETER)
+
+            user = db.retrieve_user(user_id=user_id, password=password)
+            if not user:
+                raise Exception(constants.MSG_INVALID_PARAMETER)
+
+            device_item = db.retrieve_device_item(user_id=user_id,
+                                                  item_id=device_item_id,
+                                                  item_address=device_item_address)
+            device_model = db.retrieve_device_model(model_id=device_item['model_id'])
+
+            if not db.update_device_connection(item_id=device_item_id,
+                                               item_address=device_item_address,
+                                               connection=True):
+                raise Exception(constants.MSG_CONN_FAILED)
+
+            return JsonResponse(constants.CODE_SUCCESS, **{'user': user,
+                                                           'device_item': device_item,
+                                                           'device_model': device_model})
 
         elif request.method == 'DELETE':
             device_item_id = request.GET.get('device_item_id')
@@ -233,10 +276,27 @@ def handle_connection_mgt(request):
             user_id = request.GET.get('user_id')
             password = request.GET.get('password')
 
+            if device_item_id is None and device_item_address is None:
+                raise Exception(constants.MSG_INVALID_PARAMETER)
+            if user_id is None or password is None:
+                raise Exception(constants.MSG_INVALID_PARAMETER)
+
+            if not db.retrieve_user(user_id=user_id, password=password):
+                raise Exception(constants.MSG_INVALID_PARAMETER)
+
+            if not db.update_device_connection(item_id=device_item_id,
+                                               item_address=device_item_address,
+                                               connection=False):
+                raise Exception(constants.MSG_CONN_FAILED)
+
             return JsonResponse(dict(constants.CODE_SUCCESS))
+
+        else:
+            raise Exception(constants.MSG_UNKNOWN_ERROR)
 
     except Exception as e:
         logger.exception(e)
         return JsonResponse(dict(constants.CODE_FAILURE, **{'msg': str(e)}))
     finally:
         db.close()
+

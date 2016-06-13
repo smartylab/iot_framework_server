@@ -1,0 +1,30 @@
+{% load staticfiles %}
+
+<!-- default alert modal -->
+<div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-labelledby="alertModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close modal-alert-close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="alertModalTitle">Failed</h4>
+            </div>
+            <div class="modal-body">
+                Failed
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default modal-alert-close" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{#<footer></footer>#}
+
+<!-- scripts -->
+<script src="{% static 'lib/jquery/jquery-2.2.0.min.js' %}"></script>
+<script src="{% static 'lib/bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'lib/jquery/plugins/loadingoverlay.min.js' %}"></script>
+<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+<script src="{% static 'lib/bootstrap/assets/js/ie10-viewport-bug-workaround.js' %}"></script>
+<!-- init -->
+<script src="{% static 'iot_framework/js/init.js' %}"></script>

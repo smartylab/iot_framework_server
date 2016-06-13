@@ -1,0 +1,147 @@
+{% load staticfiles %}
+
+{% include 'monitor/template_header.html' %}
+
+<!-- custom css -->
+
+
+{% include 'monitor/template_nav.html' %}
+
+<div class="container">
+    <section class="section">
+        <div class="row">
+            <div class="col-xs-12 col-title">
+                <h2 class="text-primary">
+                    {% if device_model %}Update Device Model
+                    {% else %}Add New Device Model
+                    {% endif %}
+                </h2>
+            </div>
+            <form id="addDeviceModelForm" class="col-xs-12 col-form" method="post">
+                <div class="form-container form-boxed form-horizontal row">
+
+                    <div class="col-xs-12 form-group">
+                        <label class="col-sm-3 control-label" for="modelName" >Model Name</label>
+                        <div class="col-sm-9 ">
+                            <input type="text" id="modelName" maxlength="255" name="modelName" class="form-control"
+                                   placeholder="Model Name" required>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12 form-group">
+                        <label class="col-sm-3 control-label" for="networkProtocol" >Network Protocol Stack</label>
+                        <div class="col-sm-9">
+                            <select class="form-control" id="networkProtocol" name="networkProtocol" required>
+                                <option selected disabled value="" >Choose Network Protocol</option>
+                                <option>ARCNET</option>
+                                <option>AppleTalk</option>
+                                <option>ATM</option>
+                                <option>Bluetooth</option>
+                                <option>DECNet</option>
+                                <option>Ethernet</option>
+                                <option>FDDI</option>
+                                <option>Frame relay</option>
+                                <option>HIPPI</option>
+                                <option>IEEE 1394 (FireWire, iLink)</option>
+                                <option>IEEE 802.11 (Wi-Fi, Wireless LAN)</option>
+                                <option>IEEE-488</option>
+                                <option>Internet protocol suite</option>
+                                <option>IPX</option>
+                                <option>Myrinet</option>
+                                <option>OSI protocol suite</option>
+                                <option>QsNet</option>
+                                <option>SPX</option>
+                                <option>System Network Architecture</option>
+                                <option>Token ring</option>
+                                <option>USB</option>
+                                <option>X.25 protocol suite</option>
+                                <option>E6</option>
+                                <!-- https://en.wikipedia.org/wiki/List_of_network_protocol_stacks -->
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="form-btns-container row">
+                    <div id="btnFormCancel" class="col-xs-6 col-sm-6 col-md-3 col-md-offset-3 form-button">
+                        <a class="btn btn-lg btn-warning btn-block onloading"
+                           onclick="javascript:location.replace('{% url 'monitor:device_model' %}');">
+                            {% if device_model %}Back
+                            {% else %}Cancel
+                            {% endif %}
+                        </a>
+                    </div>
+                    <div id="btnFormConfirm" class="col-xs-6 col-sm-6 col-md-3 form-button">
+                        <button class="btn btn-lg btn-primary btn-block" type="submit">
+                            {% if device_model %}Update
+                            {% else %}Add
+                            {% endif %}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+
+{% include 'monitor/template_footer.html' %}
+
+<!-- custom javascript -->
+<script>
+{% if device_model %}
+    $('#modelName').val("{{ device_model.model_name }}");
+    $('#networkProtocol').val("{{ device_model.model_network_protocol }}");
+{% endif %}
+
+$(document).ready(function () {
+    $('#addDeviceModelForm').on('submit', function (e) {
+        e.preventDefault();
+        $.LoadingOverlay('show');
+
+        {% if device_model %}
+            $.ajax("/api/device_model", {
+                method: 'PUT',
+                data: JSON.stringify({
+                    'model_id': {{ device_model.model_id }},
+                    'model_name' : $('#modelName').val(),
+                    'model_network_protocol': $('#networkProtocol').val()
+                }),
+                dataType: 'json',
+                success: function (res) {
+                    $.LoadingOverlay('hide');
+                    if (res['code'] == 'SUCCESS') {
+                        $.LoadingOverlay('hide');
+                        openModal("Successfully updated.", "Updating Success");
+                    } else {
+                        openModal(res['msg'], "Updating New Device Failed")
+                    }
+                }
+            });
+        {% else %}
+            $.ajax("/api/device_model", {
+                method: 'POST',
+                data: JSON.stringify({
+                    'model_name' : $('#modelName').val(),
+                    'model_network_protocol': $('#networkProtocol').val()
+                }),
+                dataType: 'json',
+                success: function (res) {
+                    $.LoadingOverlay('hide');
+                    if (res['code'] == 'SUCCESS') {
+                        $.LoadingOverlay('show');
+                        location.href = "{% url 'monitor:device_model' %}"
+                    } else {
+                        openModal(res['msg'], "Adding New Device Failed")
+                    }
+                }
+            });
+        {% endif %}
+
+    });
+});
+</script>
+
+
+</body>
+</html>
