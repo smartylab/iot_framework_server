@@ -1,10 +1,153 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% load staticfiles %}
+
+{% include 'monitor/template_header.html' %}
+
+<!-- custom css -->
+
+
+{% include 'monitor/template_nav.html' %}
+
+<div class="container">
+    <section class="section">
+        <div class="row">
+            <div class="col-xs-12 col-title">
+                <h2 class="text-primary">
+                    {% if user_info %}Update User
+                    {% else %}Add New User
+                    {% endif %}
+                </h2>
+            </div>
+            <form id="addDeviceModelForm" class="col-xs-12 col-form" method="post">
+                <div class="form-container form-boxed form-horizontal row">
+
+                    <div class="col-xs-12 form-group">
+                        <label class="col-sm-3 control-label" for="userId" >User ID</label>
+                        <div class="col-sm-9 ">
+                            <input type="text" id="userId" maxlength="255" name="userId" class="form-control"
+                                   placeholder="User ID" required>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12 form-group">
+                        <label class="col-sm-3 control-label" for="password" >Password</label>
+                        <div class="col-sm-9 ">
+                            <input type="password" id="password" maxlength="255" name="password" class="form-control"
+                                   placeholder="Password" required>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12 form-group">
+                        <label class="col-sm-3 control-label" for="userName" >User Name</label>
+                        <div class="col-sm-9 ">
+                            <input type="text" id="userName" maxlength="255" name="userName" class="form-control"
+                                   placeholder="User Name" required>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="form-btns-container row">
+                {% if user_info %}
+                    <div id="btnFormCancel" class="col-xs-6 col-sm-6 col-md-3 col-md-offset-1 form-button">
+                        <a class="btn btn-lg btn-warning btn-block onloading"
+                           onclick="javascript:location.replace('{% url 'monitor:user' %}');">Back</a>
+                    </div>
+                    <div id="btnFormDelete" class="col-xs-6 col-sm-6 col-md-3 form-button">
+                        <button class="btn btn-lg btn-danger btn-block" type="button">Delete</button>
+                    </div>
+                    <div id="btnFormConfirm" class="col-xs-6 col-sm-6 col-md-4 form-button">
+                        <button class="btn btn-lg btn-primary btn-block" type="submit">Update</button>
+                    </div>
+                {% else %}
+                    <div id="btnFormCancel" class="col-xs-6 col-sm-6 col-md-3 col-md-offset-3 form-button">
+                        <a class="btn btn-lg btn-warning btn-block"
+                           onclick="javascript:history.back();">Cancel</a>
+                    </div>
+                    <div id="btnFormConfirm" class="col-xs-6 col-sm-6 col-md-3 form-button">
+                        <button class="btn btn-lg btn-primary btn-block" type="submit">Add</button>
+                    </div>
+                {% endif %}
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+
+{% include 'monitor/template_footer.html' %}
+
+<!-- custom javascript -->
+<script>
+{% if user_info %}
+    $('#userId').val("{{ user_info.user_id }}").attr("readonly", "readonly");
+    $('#userName').val("{{ user_info.user_name }}");
+{% endif %}
+
+$(document).ready(function () {
+    $('#addDeviceModelForm').on('submit', function (e) {
+        e.preventDefault();
+        $.LoadingOverlay('show');
+
+        {% if user_info %}
+            $.ajax("/api/user", {
+                method: 'PUT',
+                data: JSON.stringify({
+                    'user_id': "{{ user_info.user_id }}",
+                    'user_name' : $('#userName').val(),
+                    'password': $('#password').val()
+                }),
+                dataType: 'json',
+                success: function (res) {
+                    $.LoadingOverlay('hide');
+                    if (res['code'] == 'SUCCESS') {
+                        $.LoadingOverlay('hide');
+                        openModal("Successfully updated.", "Updating Success");
+                    } else {
+                        openModal(res['msg'], "Updating User Failed")
+                    }
+                }
+            });
+        {% else %}
+            $.ajax("/api/user", {
+                method: 'POST',
+                data: JSON.stringify({
+                    'user_id': $('#userId').val(),
+                    'user_name' : $('#userName').val(),
+                    'password': $('#password').val()
+                }),
+                dataType: 'json',
+                success: function (res) {
+                    $.LoadingOverlay('hide');
+                    if (res['code'] == 'SUCCESS') {
+                        $.LoadingOverlay('show');
+                        location.href = "{% url 'monitor:user' %}"
+                    } else {
+                        openModal(res['msg'], "Adding New User Failed")
+                    }
+                }
+            });
+        {% endif %}
+    });
+
+    $('#btnFormDelete').click(function() {
+        $.ajax("/api/user", {
+            method: 'DELETE',
+            data: JSON.stringify({
+                'user_id': "{{ user_info.user_id }}"
+            }),
+            dataType: 'json',
+            success: function (res) {
+                $.LoadingOverlay('hide');
+                if (res['code'] == 'SUCCESS') {
+                    $.LoadingOverlay('show');
+                    location.replace("{% url 'monitor:user' %}")
+                } else {
+                    openModal(res['msg'], "Deleting Device Model Failed")
+                }
+            }
+        });
+    })
+});
+</script>
 
 </body>
 </html>

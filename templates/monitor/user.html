@@ -20,10 +20,10 @@
                            width="100%"></table>
                 </div>
             </div>
-{#            <div class="col-xs-12 col-md-4 col-md-offset-4">#}
-{#                <a class="btn btn-primary btn-lg btn-block"#}
-{#                   href="" type="button">New Device Item</a>#}
-{#            </div>#}
+            <div class="col-xs-12 col-md-4 col-md-offset-4">
+                <a class="btn btn-primary btn-lg btn-block"
+                   href="{% url 'monitor:user_add' %}" type="button">Add New User</a>
+            </div>
         </div>
     </section>
 </div>
@@ -53,8 +53,8 @@
         $('#dataTable tbody').on('click', 'tr', function () {
             $.LoadingOverlay('show');
             var data = table.row(this).data();
-            var index_id = data[data.length - 1];
-{#            location.href = '{% url 'miaas:archive' %}/detail/' + index_id;#}
+            var user_id = data[0];
+            location.href = '{% url 'monitor:user' %}/info/' + user_id;
         });
     });
 

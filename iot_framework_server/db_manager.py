@@ -275,7 +275,7 @@ class DbManager:
     def add_user(self, user):
         is_inserted = False
         query = "INSERT INTO user (user_id, user_name, password) " \
-                "VALUES (%(user_id)s, %(user_name)s), %(password)s)"
+                "VALUES (%(user_id)s, %(user_name)s, %(password)s)"
 
         with self.connector.cursor() as cursor:
             try:
@@ -350,9 +350,9 @@ class DbManager:
                 logger.exception(e)
         return user_list
 
-    def delete_user(self, user_id, password):
+    def delete_user(self, user_id):
         if_deleted = False
-        query = "DELETE FROM user WHERE user_id=%s and password=%s"
+        query = "DELETE FROM user WHERE user_id=%s"
         with self.connector.cursor() as cursor:
             try:
                 cursor.execute(query, user_id)
@@ -592,11 +592,12 @@ class DbManager:
 if __name__ == "__main__":
     db = DbManager()
 
-    # db.add_user({
-    #     'user_id': 'test_user',
-    #     'user_name': 'Test User'
-    # })
-    # print(db.retrieve_user('test_user'))
+    db.add_user({
+        'user_id': 'asdfzxcv',
+        'password': '1234',
+        'user_name': 'ASDF'
+    })
+    print(db.retrieve_user('asdfzxcv'))
 
     # db.add_device_model({
     #     'model_name': 'Test Model 4',
@@ -653,7 +654,7 @@ if __name__ == "__main__":
     #     'time_to': int(time.time()*1000) + 19000,
     #     'data': json.dumps(series_context_data)
     # })
-    print(db.retrieve_series_context())
+    # print(db.retrieve_series_context())
 
     db.close()
 

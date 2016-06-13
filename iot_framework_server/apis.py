@@ -34,6 +34,14 @@ def handle_user_mgt(request):
                 raise Exception(constants.MSG_INSERT_ERROR)
             return JsonResponse(constants.CODE_SUCCESS)
 
+        if request.method == 'PUT':
+            if len(request.body) == 0:
+                raise Exception(constants.MSG_NO_REQUEST_DATA)
+            user = json.loads(request.body.decode('utf-8'))
+            if not db.update_user(user):
+                raise Exception(constants.MSG_UPDATE_ERROR)
+            return JsonResponse(constants.CODE_SUCCESS)
+
         elif request.method == 'GET':
             user_id = request.GET.get('user_id')
             if not user_id:
@@ -41,6 +49,15 @@ def handle_user_mgt(request):
             user = db.retrieve_user(user_id)
             return JsonResponse(dict(constants.CODE_SUCCESS,
                                      **{'user': user}))
+
+        elif request.method == 'DELETE':
+            if len(request.body) == 0:
+                raise Exception(constants.MSG_NO_REQUEST_DATA)
+            data = json.loads(request.body.decode('utf-8'))
+            user_id = data.get('user_id')
+            if not db.delete_user(user_id):
+                raise Exception(constants.MSG_DELETE_ERROR)
+            return JsonResponse(constants.CODE_SUCCESS)
 
         else:
             raise Exception(constants.MSG_UNKNOWN_ERROR)

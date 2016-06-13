@@ -119,7 +119,7 @@ $(document).ready(function () {
                         $.LoadingOverlay('hide');
                         openModal("Successfully updated.", "Updating Success");
                     } else {
-                        openModal(res['msg'], "Updating New Device Model Failed")
+                        openModal(res['msg'], "Updating Device Model Failed")
                     }
                 }
             });
@@ -155,7 +155,7 @@ $('#btnFormDelete').click(function() {
                 $.LoadingOverlay('hide');
                 if (res['code'] == 'SUCCESS') {
                     $.LoadingOverlay('show');
-                    location.href = "{% url 'monitor:device_model' %}"
+                    location.replace("{% url 'monitor:device_model' %}");
                 } else {
                     openModal(res['msg'], "Deleting Device Model Failed")
                 }

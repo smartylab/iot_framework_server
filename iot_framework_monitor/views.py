@@ -41,6 +41,16 @@ def device_item_page_detail(request, type='detail', item_id=None):
     return render(request, 'monitor/device_item_detail.html', context)
 
 
+def device_user_page_detail(request, type='detail', user_id=None):
+    context = dict()
+    context['type'] = type
+    if type == 'detail' and user_id:
+        db = db_manager.DbManager()
+        context['user_info'] = db.retrieve_user(user_id=user_id)
+        db.close()
+    return render(request, 'monitor/user_detail.html', context)
+
+
 def device_model_page(request):
     context = dict()
 
