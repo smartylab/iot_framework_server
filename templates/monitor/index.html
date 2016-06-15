@@ -16,7 +16,9 @@
 {% include 'monitor/template_footer.html' %}
 
 <!-- custom javascript -->
-
+<script>
+    location.replace("{% url 'monitor:context' %}")
+</script>
 
 </body>
 </html>

@@ -545,7 +545,7 @@ class DbManager:
                 logger.exception(e)
         return is_inserted
 
-    def retrieve_series_context(self, context_id=None, device_item_id=None, type=None):
+    def retrieve_series_context(self, context_id=None, device_item_id=None, type=None, json_load=True):
         contexts = []
         query = None
         select_values = None
@@ -582,7 +582,10 @@ class DbManager:
                     context['type'] = row[2]
                     context['time_from'] = row[3]
                     context['time_to'] = row[4]
-                    context['data'] = json.loads(row[5])
+                    if json_load:
+                        context['data'] = json.loads(row[5])
+                    else:
+                        context['data'] = row[5]
                     contexts.append(context)
             except Exception as e:
                 logger.exception(e)

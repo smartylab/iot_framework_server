@@ -43,27 +43,20 @@ function highlightCurrentMenu() {
         var topMenuPath = paths[1];
 
         switch(topMenuPath) {
-            case 'account':
-                $('#nav_account').addClass('selected');
+            case 'user':
+                $('#nav_user').addClass('selected');
                 break;
-            case 'profile':
-                $('#nav_profile').addClass('selected');
+            case 'device_model':
+                $('#nav_device_model').addClass('selected');
                 break;
-            case 'archive':
-                $('#nav_archive').addClass('selected');
+            case 'device_item':
+                $('#nav_device_item').addClass('selected');
                 break;
-            case 'interpretation':
-                if (paths.length >= 3 && paths[2]=='request') {
-                    $('#nav_request').addClass('selected');
-                } else {
-                    $('#nav_interpretation').addClass('selected');
-                }
+            case 'connection':
+                $('#nav_connection').addClass('selected');
                 break;
-            case 'physician':
-                $('#nav_physician_profile').addClass('selected');
-                break;
-            case 'interpretations':
-                $('#nav_interpretations').addClass('selected');
+            case 'context':
+                $('#nav_context').addClass('selected');
                 break;
         }
     }
@@ -78,7 +71,7 @@ Date.prototype.format = function(f) {
 
     var d = this;
 
-    return f.replace(/(yyyy|yy|MM|dd|E|hh|mm|ss|a\/p)/gi, function($1) {
+    return f.replace(/(yyyy|yy|MM|dd|E|hh|mm|ss|ccc|a\/p)/gi, function($1) {
         switch ($1) {
             case "yyyy": return d.getFullYear();
             case "yy": return (d.getFullYear() % 1000).zf(2);
@@ -88,6 +81,7 @@ Date.prototype.format = function(f) {
             case "hh": return ((h = d.getHours() % 12) ? h : 12).zf(2);
             case "mm": return d.getMinutes().zf(2);
             case "ss": return d.getSeconds().zf(2);
+            case "ccc": return d.getMilliseconds().zf(3);
             default: return $1;
         }
     });

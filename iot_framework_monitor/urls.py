@@ -14,6 +14,10 @@ urlpatterns = [
     url(r'^device_item$', views.device_item_page, name='device_item'),
     url(r'^user$', views.user_page, name='user'),
     url(r'^connection$', views.connection_page, name='connection'),
+    url(r'^context/data/(?P<context_id>[0-9]+)$', views.context_data_page,
+        {'series_type': 'context'}, name='context_data'),
+    url(r'^context/series_data/(?P<context_id>[0-9]+)$', views.context_data_page,
+        {'series_type': 'series'}, name='series_context_data'),
     url(r'^context$', views.context_page, name='context'),
 
     url(r'^index$', views.index_page),

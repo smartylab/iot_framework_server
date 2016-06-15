@@ -181,6 +181,7 @@ a:focus {
     }
 }
 
+
 /* Column */
 @media (min-width: 992px) {
     .col-md-overlay-enable-container {
@@ -219,6 +220,11 @@ a:focus {
     word-break: break-all;
 }
 
+
+/* Nav */
+ul.nav.navbar-nav > li > .selected {
+    background-color: #efefef;
+}
 
 /* Common */
 .bold {

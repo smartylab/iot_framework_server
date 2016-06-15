@@ -1,0 +1,130 @@
+{% load staticfiles %}
+
+{% include 'monitor/template_header.html' %}
+
+<!-- custom css -->
+
+
+{% include 'monitor/template_nav.html' %}
+
+<div class="container">
+    <section class="section">
+        <div class="row">
+            <div class="col-xs-12 col-title">
+                <h2 class="text-primary">
+                    Context Data
+                </h2>
+            </div>
+            <form id="addDeviceModelForm" class="col-xs-12 col-form" method="post">
+                <div class="form-container form-boxed form-horizontal row">
+
+                    <div class="col-xs-12 form-group">
+                        <label class="col-sm-3 control-label" for="itemId" >Device Item ID</label>
+                        <div class="col-sm-9 ">
+                            <input type="number" id="itemId" maxlength="255" name="itemId" class="form-control" readonly>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12 form-group">
+                        <label class="col-sm-3 control-label" for="type" >Context Type</label>
+                        <div class="col-sm-9 ">
+                            <input type="text" id="type" maxlength="255" name="type" class="form-control" readonly>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12 form-group">
+                        <label class="col-sm-3 control-label" for="time" >Time</label>
+                        <div class="col-sm-9 ">
+                            <input type="text" id="time" maxlength="255" name="time" class="form-control" readonly>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12" style="margin-top: 20px;">
+                        <h4 id="tableContextDataTitle" class="table-title">Data</h4>
+                        <table id="tableContextData" class="table table-bordered" >
+                            <thead>
+                            <tr class="thead-tr">
+                            </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+                <div class="form-btns-container row">
+                    <div id="btnFormCancel" class="col-xs-12 col-sm-12 col-md-4 col-md-offset-4 form-button">
+                        <a class="btn btn-lg btn-primary btn-block"
+                           onclick="javascript:history.back();">Back</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+
+{% include 'monitor/template_footer.html' %}
+
+<!-- custom javascript -->
+<script>
+
+$('#itemId').val("{{ context.device_item_id }}");
+$('#type').val("{{ context.type }}");
+var context_time = {{ context.time }};
+var time = "";
+{#console.log(context_time);#}
+if (Array.isArray(context_time)) {
+    time += new Date(context_time[0]).format("yyyy/MM/dd HH:mm:ss.ccc");
+    if(context_time[1]!=undefined && context_time[1]!=null ) {
+        time += " ~ ";
+        time += new Date(context_time[1]).format("yyyy/MM/dd HH:mm:ss.ccc");
+    }
+} else {
+    time = new Date(context_time).format("yyyy/MM/dd HH:mm:ss.ccc")
+}
+$('#time').val(time);
+
+var data = {{ context.data | safe }};
+{#console.log(JSON.stringify(data));#}
+
+$(document).ready(function () {
+{% if series_type == 'context' %}
+    var thHtmlString = "<th>Sub Type</th><th>Time</th><th>Value</th>";
+    $('#tableContextData .thead-tr').html(thHtmlString);
+    var tbodyHtmlString = "";
+    for (var i=0; i<data.length; i++) {
+        tbodyHtmlString += "<tr><td>" + data[i]['sub_type'] + "</td>"
+                        + "<td>" + (data[i]['time']==null? "":new Date(data[i]['time']).format("yyyy/MM/dd HH:mm:ss.ccc")) + "</td>"
+                        + "<td>" + data[i]['value'] + " " + (data[i]['unit']==null? "":data[i]['unit']) + "</td></tr>"
+    }
+    $('#tableContextData tbody').html(tbodyHtmlString);
+{% elif series_type == 'series' %}
+    $('#tableContextDataTitle').text('Data (unit: ' + data['unit'] + ')');
+    var thHtmlString = "<th>Data Values</th>";
+    $('#tableContextData .thead-tr').html(thHtmlString);
+    var values = data['value'];
+    var tbodyHtmlString = "<tr><td>";
+    for (var i=0; i<values.length; i++) {
+        if (i!=0) tbodyHtmlString += ", ";
+        tbodyHtmlString += values[i]
+    }
+    tbodyHtmlString += "</tr></td>";
+{#    var tbodyHtmlString = "";#}
+{#    for (var i=0; i<values.length; i++) {#}
+{#        tbodyHtmlString += "<tr><td>" + values[i] + "</td></tr>"#}
+{#    }#}
+    $('#tableContextData tbody').html(tbodyHtmlString);
+{#    var headers = new Array();#}
+{#    var thHtmlString = ""#}
+{#    for (var key in data) {#}
+{#        headers.push(key);#}
+{#        thHtmlString += "<th>" + key + "</th>"#}
+{#    }#}
+
+{% endif %}
+});
+</script>
+
+</body>
+</html>

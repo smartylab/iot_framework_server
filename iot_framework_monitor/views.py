@@ -112,16 +112,51 @@ def connection_page(request):
     return render(request, 'monitor/connection.html', context)
 
 
+def context_data_page(request, context_id, series_type='context'):
+    context = dict()
+    context['context_id'] = context_id
+    context['series_type'] = series_type
+    db = db_manager.DbManager()
+    ctx = dict()
+    if series_type == 'context':
+        ctx = db.retrieve_context(context_id=context_id)[0]
+        ctx['data'] = json.dumps(db.retrieve_context_data(context_id=context_id))
+    elif series_type == 'series':
+        ctx = db.retrieve_series_context(context_id=context_id, json_load=False)[0]
+        ctx['time'] = [ctx['time_from'], ctx['time_to']]
+    db.close()
+    context['context'] = ctx
+    return render(request, 'monitor/context_data.html', context)
+
+
 def context_page(request):
     context = dict()
-
     dt_list = list()
     db = db_manager.DbManager()
-    user_list = db.retrieve_user_list()
-    for user in user_list:
+    context_list = db.retrieve_context()
+    for ctx in context_list:
+        # ctx_data = db.retrieve_context_data(context_id=ctx['context_id'])
+        # context['data'] = context_data
         data = list()
-        data.append(user['user_id'])
-        data.append(user['user_name'])
+        data.append(ctx['device_item_id'])
+        data.append(ctx['type'])
+        data.append(ctx['time'])
+        # data.append(json.dumps(context_data))
+        # data.append(ctx_data)
+        data.append(ctx['context_id'])
+        data.append('context')
+        if data:
+            dt_list.append(data)
+    series_context_list = db.retrieve_series_context()
+    for ctx in series_context_list:
+        data = list()
+        data.append(ctx['device_item_id'])
+        data.append(ctx['type'])
+        ctx_time = (ctx['time_from'], ctx['time_to'])
+        data.append(ctx_time)
+        # data.append(ctx['data'])
+        data.append(ctx['context_id'])
+        data.append('series')
         if data:
             dt_list.append(data)
     context['dt_list'] = json.dumps(dt_list)

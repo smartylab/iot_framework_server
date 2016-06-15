@@ -174,23 +174,26 @@ def handle_context_mgt(request):
         if request.method == 'POST':
             if len(request.body) == 0:
                 raise Exception(constants.MSG_NO_REQUEST_DATA)
-            data = json.loads(request.body.decode('utf-8'))
+            req_data = request.body.decode('utf-8')
+            data = json.loads(req_data)
 
-            print(data)
+            logger.info("Data coming (Context):")
+            logger.info(req_data)
 
             device_item_id = data.get('device_item_id')
             context = data.get('context')
-
             if not device_item_id or not context:
                 raise Exception(constants.MSG_INVALID_PARAMETER)
+            context_data = context.get('data')
+            if context_data is None:
+                raise Exception(constants.MSG_NO_DATA)
+
+            logger.info("Storing the data ...")
+            store_start_time = int(round(time.time() * 1000))
 
             context_id = db.add_context(device_item_id, context)
             if not context_id:
                 raise Exception(constants.MSG_INSERT_ERROR)
-
-            context_data = context.get('data')
-            if context_data is None:
-                raise Exception(constants.MSG_NO_DATA)
 
             if isinstance(context_data, list):
                 for data_item in context_data:
@@ -201,6 +204,11 @@ def handle_context_mgt(request):
                 context_data['context_id'] = context_id
                 if not db.add_context_data(context_data):
                     raise Exception(constants.MSG_INSERT_ERROR)
+
+            store_end_time = int(round(time.time() * 1000))
+            storing_time = store_end_time - store_start_time
+            logger.info("Storing Done. The storing time is: %s ms" % storing_time)
+
             return JsonResponse(constants.CODE_SUCCESS)
 
         elif request.method == 'GET':
@@ -235,18 +243,27 @@ def handle_series_context_mgt(request):
         if request.method == 'POST':
             if len(request.body) == 0:
                 raise Exception(constants.MSG_NO_REQUEST_DATA)
-            data = json.loads(request.body.decode('utf-8'))
+            req_data = request.body.decode('utf-8')
+            data = json.loads(req_data)
 
-            print(data)
+            logger.info("Data coming (Series Context):")
+            logger.info(req_data)
 
             device_item_id = data.get('device_item_id')
             context = data.get('series_context')
-
             if not device_item_id or not context:
                 raise Exception(constants.MSG_INVALID_PARAMETER)
 
+            logger.info("Storing the data ...")
+            store_start_time = int(round(time.time() * 1000))
+
             if not db.add_series_context(device_item_id, context):
                 raise Exception(constants.MSG_INSERT_ERROR)
+
+            store_end_time = int(round(time.time() * 1000))
+            storing_time = store_end_time - store_start_time
+            logger.info("Storing Done. The storing time is: %s ms" % storing_time)
+
             return JsonResponse(constants.CODE_SUCCESS)
 
         elif request.method == 'GET':
