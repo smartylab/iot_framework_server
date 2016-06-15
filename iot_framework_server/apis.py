@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 def handle_agent_mgt(request):
     pass
 
+
 @csrf_exempt
 def handle_user_mgt(request):
     db = db_manager.DbManager()
@@ -235,6 +236,7 @@ def handle_context_mgt(request):
         return JsonResponse(dict(constants.CODE_FAILURE, **{'msg': str(e)}))
     finally:
         db.close()
+
 
 @csrf_exempt
 def handle_series_context_mgt(request):

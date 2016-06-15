@@ -128,24 +128,26 @@ $(document).ready(function () {
         {% endif %}
     });
 
-    $('#btnFormDelete').click(function() {
-        $.ajax("/api/user", {
-            method: 'DELETE',
-            data: JSON.stringify({
-                'user_id': "{{ user_info.user_id }}"
-            }),
-            dataType: 'json',
-            success: function (res) {
-                $.LoadingOverlay('hide');
-                if (res['code'] == 'SUCCESS') {
-                    $.LoadingOverlay('show');
-                    location.replace("{% url 'monitor:user' %}")
-                } else {
-                    openModal(res['msg'], "Deleting Device Model Failed")
+    {% if user_info %}
+        $('#btnFormDelete').click(function() {
+            $.ajax("/api/user", {
+                method: 'DELETE',
+                data: JSON.stringify({
+                    'user_id': "{{ user_info.user_id }}"
+                }),
+                dataType: 'json',
+                success: function (res) {
+                    $.LoadingOverlay('hide');
+                    if (res['code'] == 'SUCCESS') {
+                        $.LoadingOverlay('show');
+                        location.replace("{% url 'monitor:user' %}")
+                    } else {
+                        openModal(res['msg'], "Deleting Device Model Failed")
+                    }
                 }
-            }
+            });
         });
-    })
+    {% endif %}
 });
 </script>
 

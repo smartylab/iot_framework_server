@@ -160,30 +160,32 @@ $(document).ready(function () {
         {% endif %}
     });
 
-    $('#btnFormDelete').click(function() {
-        {% if device_item.connected %}
-            $.LoadingOverlay('hide');
-            openModal("Connected device item cannot update the information.<br/> " +
-                    "Please disconnect first.", "Updating Failed");
-        {% else %}
-            $.ajax("/api/device_item", {
-                method: 'DELETE',
-                data: JSON.stringify({
-                    'item_id': {{ device_item.item_id }}
-                }),
-                dataType: 'json',
-                success: function (res) {
-                    $.LoadingOverlay('hide');
-                    if (res['code'] == 'SUCCESS') {
-                        $.LoadingOverlay('show');
-                        location.replace("{% url 'monitor:device_item' %}");
-                    } else {
-                        openModal(res['msg'], "Deleting Device Item Failed")
+    {% if device_item %}
+        $('#btnFormDelete').click(function() {
+            {% if device_item.connected %}
+                $.LoadingOverlay('hide');
+                openModal("Connected device item cannot update the information.<br/> " +
+                        "Please disconnect first.", "Updating Failed");
+            {% else %}
+                $.ajax("/api/device_item", {
+                    method: 'DELETE',
+                    data: JSON.stringify({
+                        'item_id': {{ device_item.item_id }}
+                    }),
+                    dataType: 'json',
+                    success: function (res) {
+                        $.LoadingOverlay('hide');
+                        if (res['code'] == 'SUCCESS') {
+                            $.LoadingOverlay('show');
+                            location.replace("{% url 'monitor:device_item' %}");
+                        } else {
+                            openModal(res['msg'], "Deleting Device Item Failed")
+                        }
                     }
-                }
-            });
-        {% endif %}
-    });
+                });
+            {% endif %}
+        });
+    {% endif %}
 });
 </script>
 
