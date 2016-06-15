@@ -4,6 +4,7 @@ CODE_FAILURE = {"code": "FAILURE"}
 
 MSG_DB_FAILED = "Failed to handle DB requests."
 MSG_NOT_MATCHED = "There is no matched data"
+MSG_NOT_MATCHED_DEVICE = "There is no matched device"
 MSG_NOT_FOUND = "The data is not found."
 MSG_NO_DATA = "There is no data."
 MSG_NO_REQUEST_DATA = "There is no request data."

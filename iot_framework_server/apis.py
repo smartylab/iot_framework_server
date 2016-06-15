@@ -297,11 +297,13 @@ def handle_connection_mgt(request):
         if request.method == 'POST':
             if len(request.body) == 0:
                 raise Exception(constants.MSG_NO_REQUEST_DATA)
-            data = json.loads(request.body.decode('utf-8'))
+            req_data = request.body.decode('utf-8')
+            data = json.loads(req_data)
+            logger.info(req_data)
 
             device_item_id = data.get('device_item_id')
             device_item_address = data.get('device_item_address')
-            user_id = data.get('device_item_id')
+            user_id = data.get('user_id')
             password = data.get('password')
 
             if device_item_id is None and device_item_address is None:
@@ -315,17 +317,20 @@ def handle_connection_mgt(request):
 
             device_item = db.retrieve_device_item(user_id=user_id,
                                                   item_id=device_item_id,
-                                                  item_address=device_item_address)
-            device_model = db.retrieve_device_model(model_id=device_item['model_id'])
+                                                  item_address=device_item_address)[0]
+            device_model = db.retrieve_device_model(model_id=device_item['model_id'])[0]
+
+            if not device_item or not device_model:
+                raise Exception(constants.MSG_NOT_MATCHED_DEVICE)
 
             if not db.update_device_connection(item_id=device_item_id,
                                                item_address=device_item_address,
                                                connection=True):
                 raise Exception(constants.MSG_CONN_FAILED)
 
-            return JsonResponse(constants.CODE_SUCCESS, **{'user': user,
-                                                           'device_item': device_item,
-                                                           'device_model': device_model})
+            return JsonResponse(dict(constants.CODE_SUCCESS, **{'user_id': user_id,
+                                                                'device_item': device_item,
+                                                                'device_model': device_model}))
 
         elif request.method == 'DELETE':
             device_item_id = request.GET.get('device_item_id')

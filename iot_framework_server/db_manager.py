@@ -168,12 +168,14 @@ class DbManager:
         select_values = None
         connection = int(connection)
 
+        print("%s, %s, %s" % (item_id, item_address, connection))
+
         if item_id is not None:
             query = "UPDATE device_item SET connected=%s WHERE item_id=%s"
             select_values = (connection, item_id)
         elif item_address is not None:
             query = "UPDATE device_item SET connected=%s WHERE item_address=%s"
-            select_values = (connection, item_id)
+            select_values = (connection, item_address)
 
         with self.connector.cursor() as cursor:
             try:
@@ -184,6 +186,25 @@ class DbManager:
                     is_updated = True
             except Exception as e:
                 logger.exception(e)
+
+        if not is_updated:
+            if item_id is not None:
+                query = "SELECT connected FROM device_item WHERE item_id=%s"
+                select_values = item_id
+            elif item_address is not None:
+                query = "SELECT connected FROM device_item WHERE item_address=%s"
+                select_values = item_address
+            with self.connector.cursor() as cursor:
+                try:
+                    cursor.execute(query, select_values)
+                    self.connector.commit()
+                    for row in cursor:
+                        connected = bool(row[0])
+                        if connected == connection:
+                            is_updated = True
+                except Exception as e:
+                    logger.exception(e)
+
         return is_updated
 
     def retrieve_device_item(self, item_id=None, model_id=None, user_id=None,
