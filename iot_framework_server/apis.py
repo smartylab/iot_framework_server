@@ -191,6 +191,12 @@ def handle_context_mgt(request):
             if context_data is None:
                 raise Exception(constants.MSG_NO_DATA)
 
+            device_item = db.retrieve_device_item(item_id=device_item_id)
+            if not device_item:
+                raise Exception(constants.MSG_NOT_MATCHED_DEVICE)
+            if not device_item['connected']:
+                raise Exception(constants.MSG_NOT_CONNECTED)
+
             logger.info("Storing the data ...")
             store_start_time = int(round(time.time() * 1000))
 
@@ -258,6 +264,12 @@ def handle_series_context_mgt(request):
             if not device_item_id or not context:
                 raise Exception(constants.MSG_INVALID_PARAMETER)
 
+            device_item = db.retrieve_device_item(item_id=device_item_id)
+            if not device_item:
+                raise Exception(constants.MSG_NOT_MATCHED_DEVICE)
+            if not device_item['connected']:
+                raise Exception(constants.MSG_NOT_CONNECTED)
+
             logger.info("Storing the data ...")
             store_start_time = int(round(time.time() * 1000))
 
@@ -301,7 +313,9 @@ def handle_connection_mgt(request):
                 raise Exception(constants.MSG_NO_REQUEST_DATA)
             req_data = request.body.decode('utf-8')
             data = json.loads(req_data)
-            logger.info(req_data)
+
+            logger.info("Connection coming")
+            # logger.info(req_data)
 
             device_item_id = data.get('device_item_id')
             device_item_address = data.get('device_item_address').upper()
@@ -312,6 +326,9 @@ def handle_connection_mgt(request):
                 raise Exception(constants.MSG_INVALID_PARAMETER)
             if user_id is None or password is None:
                 raise Exception(constants.MSG_INVALID_PARAMETER)
+
+            logger.info("Connecting to device ...")
+            connect_start_time = int(round(time.time() * 1000))
 
             user = db.retrieve_user(user_id=user_id, password=password)
             if not user:
@@ -329,6 +346,10 @@ def handle_connection_mgt(request):
                                                item_address=device_item_address,
                                                connection=True):
                 raise Exception(constants.MSG_CONN_FAILED)
+
+            connect_end_time = int(round(time.time() * 1000))
+            connecting_time = connect_start_time - connect_end_time
+            logger.info("Storing Done. The storing time is: %s ms" % connecting_time)
 
             return JsonResponse(dict(constants.CODE_SUCCESS, **{'user_id': user_id,
                                                                 'device_item': device_item,
