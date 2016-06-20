@@ -226,6 +226,13 @@ ul.nav.navbar-nav > li > .selected {
     background-color: #efefef;
 }
 
+/* ETC */
+.form-container .popover-title {
+    color: #fff;
+    background-color: #d9534f;
+    border-color: #d43f3a;
+}
+
 /* Common */
 .bold {
     font-weight: 500;

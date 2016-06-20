@@ -36,6 +36,26 @@ function openModal(msg, title, action) {
 
 }
 
+function checkTextOnlyAlphabetsAndNumber(text) {
+    var regExp = /^[a-zA-Z0-9_ ,-]+$/;
+    return regExp.test(text);
+}
+
+function makeNoticePopover(element, msg) {
+    element.popover({
+        title: "Notice",
+        content: msg,
+        placement: "bottom",
+        trigger: "manual"
+    }).data('bs.popover')
+        .tip()
+        .addClass('popover-info');
+    element.popover("show");
+    setTimeout(function () {
+        element.popover('destroy');
+    }, 4000);
+}
+
 function highlightCurrentMenu() {
     var paths = jQuery(location).attr('pathname').split('/');
 

@@ -102,6 +102,15 @@
 $(document).ready(function () {
     $('#addDeviceModelForm').on('submit', function (e) {
         e.preventDefault();
+
+        var modelName = $('#modelName').val().trim();
+        $('#modelName').val(modelName);
+
+        if (!checkTextOnlyAlphabetsAndNumber(modelName)) {
+            makeNoticePopover($('#modelName'), "Model Name only contains alphabet, number, '-', '_', ',', and space.");
+            return;
+        }
+
         $.LoadingOverlay('show');
 
         {% if device_model %}
@@ -109,7 +118,7 @@ $(document).ready(function () {
                 method: 'PUT',
                 data: JSON.stringify({
                     'model_id': {{ device_model.model_id }},
-                    'model_name' : $('#modelName').val(),
+                    'model_name' : modelName,
                     'model_network_protocol': $('#networkProtocol').val()
                 }),
                 dataType: 'json',
@@ -127,7 +136,7 @@ $(document).ready(function () {
             $.ajax("/api/device_model", {
                 method: 'POST',
                 data: JSON.stringify({
-                    'model_name' : $('#modelName').val(),
+                    'model_name' : modelName,
                     'model_network_protocol': $('#networkProtocol').val()
                 }),
                 dataType: 'json',

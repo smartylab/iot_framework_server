@@ -107,6 +107,23 @@
 $(document).ready(function () {
     $('#addDeviceModelForm').on('submit', function (e) {
         e.preventDefault();
+
+        var itemName = $('#itemName').val().trim();
+        $('#itemName').val(itemName);
+
+        var address = $('#address').val().trim().toUpperCase();
+        $('#address').val(address);
+
+        if (!checkTextOnlyAlphabetsAndNumber(itemName)) {
+            makeNoticePopover($('#itemName'), "Item Name only contains alphabet, number, '-', '_', ',', and space.");
+            return;
+        }
+
+        if (!checkNetworkAddress(address)) {
+            makeNoticePopover($('#address'), "Invalid network address.");
+            return;
+        }
+
         $.LoadingOverlay('show');
 
         {% if device_item %}
@@ -122,8 +139,8 @@ $(document).ready(function () {
                     'item_id': {{ device_item.item_id }},
                     'model_id' : $('#modelId').val(),
                     'user_id': $('#userId').val(),
-                    'item_name': $('#itemName').val(),
-                    'item_address': $('#address').val()
+                    'item_name': itemName,
+                    'item_address': address
                 }),
                 dataType: 'json',
                 success: function (res) {
@@ -143,8 +160,8 @@ $(document).ready(function () {
                 data: JSON.stringify({
                     'model_id' : $('#modelId').val(),
                     'user_id': $('#userId').val(),
-                    'item_name': $('#itemName').val(),
-                    'item_address': $('#address').val()
+                    'item_name': itemName,
+                    'item_address': address
                 }),
                 dataType: 'json',
                 success: function (res) {
@@ -187,6 +204,14 @@ $(document).ready(function () {
         });
     {% endif %}
 });
+
+function checkNetworkAddress(text) {
+    var regExpIPv4 = /^(([1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[.]){3}([1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/;
+    var regExpIPv6 = /((^|:)([0-9a-fA-F]{0,4})){1,8}$/;
+    var regExpMacAddr = /^(([0-9a-fA-F]{4}\.){2}[0-9a-fA-F]{4}|([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}|([0-9a-fA-F]{12}))$/
+    return regExpIPv4.test(text) || regExpIPv6.test(text) || regExpMacAddr.test(text);
+}
+
 </script>
 
 

@@ -124,6 +124,7 @@ def handle_device_item_mgt(request):
             if len(request.body) == 0:
                 raise Exception(constants.MSG_NO_REQUEST_DATA)
             device_item = json.loads(request.body.decode('utf-8'))
+            device_item['item_address'] = device_item['item_address'].upper()
             item_id = db.add_device_item(device_item)
             if not item_id:
                 raise Exception(constants.MSG_INSERT_ERROR)
@@ -135,6 +136,7 @@ def handle_device_item_mgt(request):
             if len(request.body) == 0:
                 raise Exception(constants.MSG_NO_REQUEST_DATA)
             device_item = json.loads(request.body.decode('utf-8'))
+            device_item['item_address'] = device_item['item_address'].upper()
             if not db.update_device_item(device_item):
                 raise Exception(constants.MSG_UPDATE_ERROR)
             return JsonResponse(constants.CODE_SUCCESS)
@@ -302,7 +304,7 @@ def handle_connection_mgt(request):
             logger.info(req_data)
 
             device_item_id = data.get('device_item_id')
-            device_item_address = data.get('device_item_address')
+            device_item_address = data.get('device_item_address').upper()
             user_id = data.get('user_id')
             password = data.get('password')
 
@@ -334,7 +336,7 @@ def handle_connection_mgt(request):
 
         elif request.method == 'DELETE':
             device_item_id = request.GET.get('device_item_id')
-            device_item_address = request.GET.get('device_item_address')
+            device_item_address = request.GET.get('device_item_address').upper()
             user_id = request.GET.get('user_id')
             password = request.GET.get('password')
 

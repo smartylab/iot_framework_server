@@ -85,6 +85,25 @@
 $(document).ready(function () {
     $('#addDeviceModelForm').on('submit', function (e) {
         e.preventDefault();
+
+        {% if not user_info %}
+        var userId = $('#userId').val().trim();
+        $('#userId').val(userId);
+
+        if (!checkUserIdText(userId)) {
+            makeNoticePopover($('#userId'), "User ID only contains lower case alphabet, number, '-', and '_'.");
+            return;
+        }
+        {% endif %}
+
+        var userName = $('#userName').val().trim();
+        $('#userName').val(userName);
+
+        if (!checkUserNameText(userName)) {
+            makeNoticePopover($('#userName'), "User Name only contains alphabet, '-', '.', ',', and space.");
+            return;
+        }
+
         $.LoadingOverlay('show');
 
         {% if user_info %}
@@ -149,6 +168,17 @@ $(document).ready(function () {
         });
     {% endif %}
 });
+
+function checkUserIdText(text) {
+    var regExp = /^[a-z0-9_-]+$/;
+    return regExp.test(text);
+}
+
+function checkUserNameText(text) {
+    var regExp = /^[a-zA-Z ,.-]+$/;
+    return regExp.test(text);
+}
+
 </script>
 
 </body>
