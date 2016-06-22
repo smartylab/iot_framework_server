@@ -166,6 +166,7 @@ $(document).ready(function () {
                     if (res['code'] == 'SUCCESS') {
                         $.LoadingOverlay('show');
                         location.replace("{% url 'monitor:device_model' %}");
+                        $.LoadingOverlay('hide');
                     } else {
                         openModal(res['msg'], "Deleting Device Model Failed")
                     }

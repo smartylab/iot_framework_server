@@ -6,7 +6,7 @@ $(document).ready(function() {
     highlightCurrentMenu();
 
     $('.onloading').click(function() {
-        $.LoadingOverlay('show');
+        //$.LoadingOverlay('show');
     });
 
 });

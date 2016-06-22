@@ -81,9 +81,9 @@
             } else if (series_type == 'series') {
                 location.href = '{% url 'monitor:context' %}/series_data/' + context_id;
             } else {
-                $.LoadingOverlay('hide');
                 alert("Error!");
             }
+            $.LoadingOverlay('hide');
         });
     });
 </script>

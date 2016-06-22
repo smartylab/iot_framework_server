@@ -120,6 +120,7 @@ $(document).ready(function () {
                     if (res['code'] == 'SUCCESS') {
                         $.LoadingOverlay('hide');
                         openModal("Successfully updated.", "Updating Success");
+                        $.LoadingOverlay('hide');
                     } else {
                         openModal(res['msg'], "Updating User Failed")
                     }
@@ -138,7 +139,8 @@ $(document).ready(function () {
                     $.LoadingOverlay('hide');
                     if (res['code'] == 'SUCCESS') {
                         $.LoadingOverlay('show');
-                        location.href = "{% url 'monitor:user' %}"
+                        location.href = "{% url 'monitor:user' %}";
+                        $.LoadingOverlay('hide');
                     } else {
                         openModal(res['msg'], "Adding New User Failed")
                     }
@@ -159,7 +161,8 @@ $(document).ready(function () {
                     $.LoadingOverlay('hide');
                     if (res['code'] == 'SUCCESS') {
                         $.LoadingOverlay('show');
-                        location.replace("{% url 'monitor:user' %}")
+                        location.replace("{% url 'monitor:user' %}");
+                        $.LoadingOverlay('hide');
                     } else {
                         openModal(res['msg'], "Deleting Device Model Failed")
                     }

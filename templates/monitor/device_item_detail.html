@@ -146,7 +146,6 @@ $(document).ready(function () {
                 success: function (res) {
                     $.LoadingOverlay('hide');
                     if (res['code'] == 'SUCCESS') {
-                        $.LoadingOverlay('hide');
                         openModal("Successfully updated.", "Updating Success");
                     } else {
                         openModal(res['msg'], "Updating Device Item Failed")
@@ -168,7 +167,8 @@ $(document).ready(function () {
                     $.LoadingOverlay('hide');
                     if (res['code'] == 'SUCCESS') {
                         $.LoadingOverlay('show');
-                        location.href = "{% url 'monitor:device_item' %}"
+                        location.href = "{% url 'monitor:device_item' %}";
+                        $.LoadingOverlay('hide');
                     } else {
                         openModal(res['msg'], "Adding New Device Item Failed")
                     }
@@ -195,6 +195,7 @@ $(document).ready(function () {
                         if (res['code'] == 'SUCCESS') {
                             $.LoadingOverlay('show');
                             location.replace("{% url 'monitor:device_item' %}");
+                            $.LoadingOverlay('hide');
                         } else {
                             openModal(res['msg'], "Deleting Device Item Failed")
                         }
