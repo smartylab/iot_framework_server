@@ -199,7 +199,7 @@ class DbManager:
                     cursor.execute(query, select_values)
                     self.connector.commit()
                     for row in cursor:
-                        connected = bool(row[0])
+                        connected = bool(int(row[0]))
                         if connected == connection:
                             is_updated = True
                 except Exception as e:
@@ -273,7 +273,7 @@ class DbManager:
                     device_item['user_id'] = row[2]
                     device_item['item_name'] = row[3]
                     device_item['item_address'] = row[4]
-                    device_item['connected'] = bool(row[5])
+                    device_item['connected'] = bool(int(row[5]))
                     device_items.append(device_item)
             except Exception as e:
                 logger.exception(e)

@@ -194,7 +194,7 @@ def handle_context_mgt(request):
             device_item = db.retrieve_device_item(item_id=device_item_id)
             if not device_item:
                 raise Exception(constants.MSG_NOT_MATCHED_DEVICE)
-            if not device_item['connected']:
+            if not device_item[0]['connected']:
                 raise Exception(constants.MSG_NOT_CONNECTED)
 
             logger.info("Storing the data ...")
@@ -267,7 +267,7 @@ def handle_series_context_mgt(request):
             device_item = db.retrieve_device_item(item_id=device_item_id)
             if not device_item:
                 raise Exception(constants.MSG_NOT_MATCHED_DEVICE)
-            if not device_item['connected']:
+            if not device_item[0]['connected']:
                 raise Exception(constants.MSG_NOT_CONNECTED)
 
             logger.info("Storing the data ...")
