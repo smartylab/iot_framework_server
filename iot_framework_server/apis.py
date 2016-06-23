@@ -373,17 +373,22 @@ def handle_connection_mgt(request):
 
             connect_end_time = int(round(time.time() * 1000))
             connecting_time = connect_start_time - connect_end_time
-            logger.info("Storing Done. The storing time is: %s ms" % connecting_time)
+            logger.info("Connecting Done. The connecting time is: %s ms" % connecting_time)
 
             return JsonResponse(dict(constants.CODE_SUCCESS, **{'user_id': user_id,
                                                                 'device_item': device_item,
                                                                 'device_model': device_model}))
 
         elif request.method == 'DELETE':
-            device_item_id = request.GET.get('device_item_id')
-            device_item_address = request.GET.get('device_item_address')
-            user_id = request.GET.get('user_id')
-            password = request.GET.get('password')
+            if len(request.body) == 0:
+                raise Exception(constants.MSG_NO_REQUEST_DATA)
+            req_data = request.body.decode('utf-8')
+            data = json.loads(req_data)
+
+            device_item_id = data.get('device_item_id')
+            device_item_address = data.get('device_item_address')
+            user_id = data.get('user_id')
+            password = data.get('password')
 
             if device_item_address:
                 device_item_address = check_network_address(device_item_address)
