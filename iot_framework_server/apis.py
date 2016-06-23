@@ -1,6 +1,7 @@
 import json
 import logging
 import time
+import re
 from pprint import pprint
 
 from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
@@ -123,8 +124,17 @@ def handle_device_item_mgt(request):
         if request.method == 'POST':
             if len(request.body) == 0:
                 raise Exception(constants.MSG_NO_REQUEST_DATA)
-            device_item = json.loads(request.body.decode('utf-8'))
-            device_item['item_address'] = str(device_item['item_address']).upper()
+            req_data = request.body.decode('utf-8')
+            device_item = json.loads(req_data)
+
+            logger.info("Device Item Add Coming:")
+            logger.info(req_data)
+
+            # device_item['item_address'] = str(device_item['item_address']).upper()
+            device_item['item_address'] = check_network_address(device_item['item_address'])
+            if not device_item['item_address']:
+                raise Exception(constants.MSG_INVALID_NETADDR)
+
             item_id = db.add_device_item(device_item)
             if not item_id:
                 raise Exception(constants.MSG_INSERT_ERROR)
@@ -135,8 +145,17 @@ def handle_device_item_mgt(request):
         elif request.method == 'PUT':
             if len(request.body) == 0:
                 raise Exception(constants.MSG_NO_REQUEST_DATA)
-            device_item = json.loads(request.body.decode('utf-8'))
-            device_item['item_address'] = str(device_item['item_address']).upper()
+            req_data = request.body.decode('utf-8')
+            device_item = json.loads(req_data)
+
+            logger.info("Device Item Update Coming:")
+            logger.info(req_data)
+
+            # device_item['item_address'] = str(device_item['item_address']).upper()
+            device_item['item_address'] = check_network_address(device_item['item_address'])
+            if not device_item['item_address']:
+                raise Exception(constants.MSG_INVALID_NETADDR)
+
             if not db.update_device_item(device_item):
                 raise Exception(constants.MSG_UPDATE_ERROR)
             return JsonResponse(constants.CODE_SUCCESS)
@@ -321,8 +340,11 @@ def handle_connection_mgt(request):
             device_item_address = data.get('device_item_address')
             user_id = data.get('user_id')
             password = data.get('password')
+
             if device_item_address:
-                device_item_address = str(device_item_address).upper()
+                device_item_address = check_network_address(device_item_address)
+                if not device_item_address:
+                    raise Exception(constants.MSG_INVALID_NETADDR)
 
             if device_item_id is None and device_item_address is None:
                 raise Exception(constants.MSG_INVALID_PARAMETER)
@@ -362,8 +384,11 @@ def handle_connection_mgt(request):
             device_item_address = request.GET.get('device_item_address')
             user_id = request.GET.get('user_id')
             password = request.GET.get('password')
+
             if device_item_address:
-                device_item_address = str(device_item_address).upper()
+                device_item_address = check_network_address(device_item_address)
+                if not device_item_address:
+                    raise Exception(constants.MSG_INVALID_NETADDR)
 
             if device_item_id is None and device_item_address is None:
                 raise Exception(constants.MSG_INVALID_PARAMETER)
@@ -388,4 +413,25 @@ def handle_connection_mgt(request):
         return JsonResponse(dict(constants.CODE_FAILURE, **{'msg': str(e)}))
     finally:
         db.close()
+
+
+@csrf_exempt
+def handle_statistics_mgt(request):
+    pass
+
+
+### Utilities ###
+def check_network_address(net_addr):
+    regexp_ipv4 = r'^(([1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[.]){3}([1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$'
+    regexp_ipv6 = r'((^|:)([0-9a-fA-F]{0,4})){1,8}$'
+    regexp_macaddr = r'(([0-9a-fA-F]{4}\.){2}[0-9a-fA-F]{4}|([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}|([0-9a-fA-F]{12}))$'
+    if bool(re.match(regexp_ipv4, net_addr)) or bool(re.match(regexp_ipv6, net_addr)) \
+            or bool(re.match(regexp_macaddr, net_addr)):
+        return str(net_addr).upper()
+    else:
+        regexp_common = r'^[a-zA-Z0-9_./:-]+$'
+        if bool(re.match(regexp_common, net_addr)):
+            return net_addr
+        else:
+            return False
 
