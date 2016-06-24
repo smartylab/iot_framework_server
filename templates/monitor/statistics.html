@@ -38,53 +38,32 @@
                 .DataTable({
                     "fnInitComplete": function(oSettings){
                         $.LoadingOverlay('hide')
-                    }, columnDefs: [
-                        { width: '20%', targets: 0 },
-                        { width: '30%', targets: 1 },
-                        { width: '50%', targets: 2 },
-                    ],
+                    },
                     data: dataSet,
-                    order: [[2, "desc"]],
+                    order: [[0, "asc"], [1, "asc"], [2, "asc"]],
                     columns: [
                         {title: "Device Item ID"},
                         {title: "Context Type"},
-                        {title: "Time", render: {
+                        {title: "Subtype", render: {
                             "display": function(data) {
-                                if (Array.isArray(data)) {
-                                    var time = "";
-                                    time += new Date(data[0]).format("yyyy/MM/dd HH:mm:ss.ccc");
-                                    if(data[1]!=undefined && data[1]!=null ) {
-                                        time += " ~ ";
-                                        time += new Date(data[1]).format("yyyy/MM/dd HH:mm:ss.ccc");
-                                    }
-                                    return time;
-                                } else {
-                                    return new Date(data).format("yyyy/MM/dd HH:mm:ss.ccc")
-                                }
-
+                                if (data == null || data == "None")
+                                    return '';
+                                else return data
                             }
-                        }}/*,
-                        {title: "Data", render: {
-                            "display": function(data) {
-                                return JSON.stringify(data);
-                            }
-                        }}*/
+                        }},
+{#                        {title: "Unit", render: {#}
+{#                            "display": function(data) {#}
+{#                                if (data == null || data == "None")#}
+{#                                    return '';#}
+{#                                else return data#}
+{#                            }#}
+{#                        }},#}
+                        {title: "Min"},
+                        {title: "Max"},
+                        {title: "Avg"},
+                        {title: "Var"}
                     ]
                 });
-        $('#dataTable tbody').on('click', 'tr', function () {
-            $.LoadingOverlay('show');
-            var data = table.row(this).data();
-            var context_id = data[3];
-            var series_type = data[4];
-            if (series_type == 'context') {
-                location.href = '{% url 'monitor:context' %}/data/' + context_id;
-            } else if (series_type == 'series') {
-                location.href = '{% url 'monitor:context' %}/series_data/' + context_id;
-            } else {
-                alert("Error!");
-            }
-            $.LoadingOverlay('hide');
-        });
     });
 </script>
 

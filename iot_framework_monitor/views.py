@@ -170,9 +170,42 @@ def statistics_page(request):
     req_context = dict()
     dt_list = list()
 
-    # statistics.get_statistics_dict(context_type='context')
-    statistics.get_statistics_dict(context_type='series_context')
+    context_stat_dict = statistics.get_statistics_dict(context_type='context')
+    series_stat_dict = statistics.get_statistics_dict(context_type='series_context')
 
+    for device_item_id in context_stat_dict.keys():
+        device_context_dict = context_stat_dict[device_item_id]
+        for context_type in device_context_dict.keys():
+            context_type_dict = device_context_dict[context_type]
+            for subtype in context_type_dict.keys():
+                subtype_dict = context_type_dict[subtype]
+                data = list()
+                data.append(device_item_id)
+                data.append(context_type)
+                data.append(subtype)
+                # data.append(subtype_dict.get('unit'))
+                data.append(subtype_dict.get('min'))
+                data.append(subtype_dict.get('max'))
+                data.append(subtype_dict.get('avg'))
+                data.append(subtype_dict.get('var'))
+                dt_list.append(data)
+
+    for device_item_id in series_stat_dict.keys():
+        device_context_dict = series_stat_dict[device_item_id]
+        for context_type in device_context_dict.keys():
+            context_type_dict = device_context_dict[context_type]
+            data = list()
+            data.append(device_item_id)
+            data.append(context_type)
+            data.append(None)
+            # data.append(context_type_dict.get('unit'))
+            data.append(context_type_dict.get('min'))
+            data.append(context_type_dict.get('max'))
+            data.append(context_type_dict.get('avg'))
+            data.append(context_type_dict.get('var'))
+            dt_list.append(data)
+
+    req_context['dt_list'] = json.dumps(dt_list)
     return render(request, 'monitor/statistics.html', req_context)
 
 
