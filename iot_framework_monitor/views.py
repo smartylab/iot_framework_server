@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 
 from django.views.generic.edit import FormView
+from iot_framework_server import statistics
 import logging, json, time
 import pprint
 
@@ -168,56 +169,10 @@ def context_page(request):
 def statistics_page(request):
     req_context = dict()
     dt_list = list()
-    db = db_manager.DbManager()
 
-    context_list = db.retrieve_context()
+    # statistics.get_statistics_dict(context_type='context')
+    statistics.get_statistics_dict(context_type='series_context')
 
-    device_context_dict = dict()
-    for ctx in context_list:
-        context_data = db.retrieve_context_data(context_id=ctx['context_id'])
-
-        item_context_dict = device_context_dict.get(ctx['device_item_id'])
-        if not item_context_dict:
-            item_context_dict = dict()
-            device_context_dict[ctx['device_item_id']] = item_context_dict
-
-        context_type_dict = item_context_dict.get(ctx['type'])
-        if not context_type_dict:
-            context_type_dict = dict()
-            item_context_dict[ctx['type']] = context_type_dict
-
-        for data in context_data:
-            subtype_name = data.get('sub_type')
-            if not subtype_name:
-                subtype_name = "None"
-            subtype_dict = context_type_dict.get(subtype_name)
-            if not subtype_dict:
-                subtype_dict = dict()
-                subtype_dict['values'] = list()
-                subtype_dict['unit'] = data.get('unit')
-                context_type_dict[subtype_name] = subtype_dict
-            subtype_dict['values'].append(data['value'])
-    # pprint.pprint(device_context_dict)
-
-    series_context_list = db.retrieve_series_context()
-    device_series_context_dict = dict()
-    for ctx in series_context_list:
-        item_context_dict = device_series_context_dict.get(ctx['device_item_id'])
-        if not item_context_dict:
-            item_context_dict = dict()
-            device_series_context_dict[ctx['device_item_id']] = item_context_dict
-
-        context_type_dict = item_context_dict.get(ctx['type'])
-        if not context_type_dict:
-            context_type_dict = dict()
-            context_type_dict['values'] = list()
-            context_type_dict['unit'] = ctx['data'].get('unit')
-            item_context_dict[ctx['type']] = context_type_dict
-        if ctx['data'].get('value'):
-            context_type_dict['values'].extend(ctx['data']['value'])
-    # pprint.pprint(device_series_context_dict)
-
-    db.close()
     return render(request, 'monitor/statistics.html', req_context)
 
 

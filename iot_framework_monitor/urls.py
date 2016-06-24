@@ -19,6 +19,7 @@ urlpatterns = [
     url(r'^context/series_data/(?P<context_id>[0-9]+)$', views.context_data_page,
         {'series_type': 'series'}, name='series_context_data'),
     url(r'^context$', views.context_page, name='context'),
+    url(r'^statistics$', views.statistics_page, name='statistics'),
 
     url(r'^index$', views.index_page),
 

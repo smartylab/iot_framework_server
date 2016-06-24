@@ -78,6 +78,9 @@ function highlightCurrentMenu() {
             case 'context':
                 $('#nav_context').addClass('selected');
                 break;
+            case 'statistics':
+                $('#nav_statistics').addClass('selected');
+                break;
         }
     }
 }
