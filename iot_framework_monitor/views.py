@@ -8,6 +8,7 @@ from django.contrib.auth import authenticate, login, logout
 
 from django.views.generic.edit import FormView
 import logging, json, time
+import pprint
 
 from iot_framework_server import db_manager
 
@@ -20,39 +21,39 @@ logger = logging.getLogger(__name__)
 
 
 def device_model_page_detail(request, type='detail', model_id=None):
-    context = dict()
-    context['type'] = type
+    req_context = dict()
+    req_context['type'] = type
     if type == 'detail' and model_id:
         db = db_manager.DbManager()
-        context['device_model'] = db.retrieve_device_model(model_id=model_id)[0]
+        req_context['device_model'] = db.retrieve_device_model(model_id=model_id)[0]
         db.close()
-    return render(request, 'monitor/device_model_detail.html', context)
+    return render(request, 'monitor/device_model_detail.html', req_context)
 
 
 def device_item_page_detail(request, type='detail', item_id=None):
-    context = dict()
-    context['type'] = type
+    req_context = dict()
+    req_context['type'] = type
     db = db_manager.DbManager()
     if type == 'detail' and item_id:
-        context['device_item'] = db.retrieve_device_item(item_id=item_id)[0]
-    context['model_list'] = db.retrieve_device_model()
-    context['user_list'] = db.retrieve_user_list()
+        req_context['device_item'] = db.retrieve_device_item(item_id=item_id)[0]
+    req_context['model_list'] = db.retrieve_device_model()
+    req_context['user_list'] = db.retrieve_user_list()
     db.close()
-    return render(request, 'monitor/device_item_detail.html', context)
+    return render(request, 'monitor/device_item_detail.html', req_context)
 
 
 def device_user_page_detail(request, type='detail', user_id=None):
-    context = dict()
-    context['type'] = type
+    req_context = dict()
+    req_context['type'] = type
     if type == 'detail' and user_id:
         db = db_manager.DbManager()
-        context['user_info'] = db.retrieve_user(user_id=user_id)
+        req_context['user_info'] = db.retrieve_user(user_id=user_id)
         db.close()
-    return render(request, 'monitor/user_detail.html', context)
+    return render(request, 'monitor/user_detail.html', req_context)
 
 
 def device_model_page(request):
-    context = dict()
+    req_context = dict()
 
     dt_list = list()
     db = db_manager.DbManager()
@@ -64,13 +65,13 @@ def device_model_page(request):
         data.append(model['model_network_protocol'])
         if data:
             dt_list.append(data)
-    context['dt_list'] = json.dumps(dt_list)
+    req_context['dt_list'] = json.dumps(dt_list)
     db.close()
-    return render(request, 'monitor/device_model.html', context)
+    return render(request, 'monitor/device_model.html', req_context)
 
 
 def device_item_page(request):
-    context = dict()
+    req_context = dict()
 
     dt_list = []
     db = db_manager.DbManager()
@@ -85,13 +86,13 @@ def device_item_page(request):
         data.append(item['connected'])
         if data:
             dt_list.append(data)
-    context['dt_list'] = json.dumps(dt_list)
+    req_context['dt_list'] = json.dumps(dt_list)
     db.close()
-    return render(request, 'monitor/device_item.html', context)
+    return render(request, 'monitor/device_item.html', req_context)
 
 
 def user_page(request):
-    context = dict()
+    req_context = dict()
 
     dt_list = list()
     db = db_manager.DbManager()
@@ -102,20 +103,20 @@ def user_page(request):
         data.append(user['user_name'])
         if data:
             dt_list.append(data)
-    context['dt_list'] = json.dumps(dt_list)
+    req_context['dt_list'] = json.dumps(dt_list)
     db.close()
-    return render(request, 'monitor/user.html', context)
+    return render(request, 'monitor/user.html', req_context)
 
 
 def connection_page(request):
-    context = dict()
-    return render(request, 'monitor/connection.html', context)
+    req_context = dict()
+    return render(request, 'monitor/connection.html', req_context)
 
 
 def context_data_page(request, context_id, series_type='context'):
-    context = dict()
-    context['context_id'] = context_id
-    context['series_type'] = series_type
+    req_context = dict()
+    req_context['context_id'] = context_id
+    req_context['series_type'] = series_type
     db = db_manager.DbManager()
     ctx = dict()
     if series_type == 'context':
@@ -125,12 +126,12 @@ def context_data_page(request, context_id, series_type='context'):
         ctx = db.retrieve_series_context(context_id=context_id, json_load=False)[0]
         ctx['time'] = [ctx['time_from'], ctx['time_to']]
     db.close()
-    context['context'] = ctx
-    return render(request, 'monitor/context_data.html', context)
+    req_context['context'] = ctx
+    return render(request, 'monitor/context_data.html', req_context)
 
 
 def context_page(request):
-    context = dict()
+    req_context = dict()
     dt_list = list()
     db = db_manager.DbManager()
     context_list = db.retrieve_context()
@@ -159,9 +160,65 @@ def context_page(request):
         data.append('series')
         if data:
             dt_list.append(data)
-    context['dt_list'] = json.dumps(dt_list)
+    req_context['dt_list'] = json.dumps(dt_list)
     db.close()
-    return render(request, 'monitor/context.html', context)
+    return render(request, 'monitor/context.html', req_context)
+
+
+def statistics_page(request):
+    req_context = dict()
+    dt_list = list()
+    db = db_manager.DbManager()
+
+    context_list = db.retrieve_context()
+
+    device_context_dict = dict()
+    for ctx in context_list:
+        context_data = db.retrieve_context_data(context_id=ctx['context_id'])
+
+        item_context_dict = device_context_dict.get(ctx['device_item_id'])
+        if not item_context_dict:
+            item_context_dict = dict()
+            device_context_dict[ctx['device_item_id']] = item_context_dict
+
+        context_type_dict = item_context_dict.get(ctx['type'])
+        if not context_type_dict:
+            context_type_dict = dict()
+            item_context_dict[ctx['type']] = context_type_dict
+
+        for data in context_data:
+            subtype_name = data.get('sub_type')
+            if not subtype_name:
+                subtype_name = "None"
+            subtype_dict = context_type_dict.get(subtype_name)
+            if not subtype_dict:
+                subtype_dict = dict()
+                subtype_dict['values'] = list()
+                subtype_dict['unit'] = data.get('unit')
+                context_type_dict[subtype_name] = subtype_dict
+            subtype_dict['values'].append(data['value'])
+    # pprint.pprint(device_context_dict)
+
+    series_context_list = db.retrieve_series_context()
+    device_series_context_dict = dict()
+    for ctx in series_context_list:
+        item_context_dict = device_series_context_dict.get(ctx['device_item_id'])
+        if not item_context_dict:
+            item_context_dict = dict()
+            device_series_context_dict[ctx['device_item_id']] = item_context_dict
+
+        context_type_dict = item_context_dict.get(ctx['type'])
+        if not context_type_dict:
+            context_type_dict = dict()
+            context_type_dict['values'] = list()
+            context_type_dict['unit'] = ctx['data'].get('unit')
+            item_context_dict[ctx['type']] = context_type_dict
+        if ctx['data'].get('value'):
+            context_type_dict['values'].extend(ctx['data']['value'])
+    # pprint.pprint(device_series_context_dict)
+
+    db.close()
+    return render(request, 'monitor/statistics.html', req_context)
 
 
 def test_page(request):
