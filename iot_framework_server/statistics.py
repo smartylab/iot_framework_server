@@ -44,7 +44,9 @@ def get_statistics_dict(context_type, device_item_id=None, type=None, context_id
                     context_type_dict[subtype_name] = subtype_dict
                     subtype_list.append(subtype_dict)
                 if subtype_dict['datatype'] == 'numeric':
-                    subtype_dict['values'].append(float(data['value']))
+                    try:
+                        subtype_dict['values'].append(float(data['value']))
+                    except: pass
                 else:
                     subtype_dict['values'].append(data['value'])
         # pprint.pprint(device_context_dict)
