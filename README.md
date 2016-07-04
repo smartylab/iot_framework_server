@@ -1,6 +1,3 @@
 # Installation #
 ## Dependencies ##
-* django
-* pytz
-* pymysql
-* numpy
+* sudo pip install django pytz pymysql numpy
