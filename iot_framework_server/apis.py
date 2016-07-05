@@ -165,8 +165,10 @@ def handle_device_item_mgt(request):
             model_id = request.GET.get('model_id')
             user_id = request.GET.get('user_id')
             item_name = request.GET.get('item_name')
+            item_address = request.GET.get('item_address')
             item_list = db.retrieve_device_item(item_id=item_id, model_id=model_id,
-                                                user_id=user_id, item_name=item_name)
+                                                user_id=user_id, item_name=item_name,
+                                                item_address=item_address)
             return JsonResponse(dict(constants.CODE_SUCCESS,
                                      **{'item_list': item_list}))
 
@@ -243,7 +245,7 @@ def handle_context_mgt(request):
             context_id = request.GET.get('context_id')
             device_item_id = request.GET.get('device_item_id')
             context_type = request.GET.get('type')
-            if not context_id and not device_item_id and not type:
+            if not context_id and not device_item_id and not context_type:
                 raise Exception(constants.MSG_INVALID_PARAMETER)
 
             context_list = db.retrieve_context(context_id=context_id,
