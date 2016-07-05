@@ -166,7 +166,7 @@ def context_page(request):
     return render(request, 'monitor/context.html', req_context)
 
 
-def statistics_page(request):
+def statistics_total_page(request):
     req_context = dict()
     dt_list = list()
 
@@ -206,8 +206,111 @@ def statistics_page(request):
             dt_list.append(data)
 
     req_context['dt_list'] = json.dumps(dt_list)
+    return render(request, 'monitor/statistics_total.html', req_context)
+
+
+def statistics_page(request):
+    req_context = dict()
+    dt_list = list()
+
+    db = db_manager.DbManager()
+
+    context_list = db.retrieve_context()
+    device_context_dict = dict()
+    for ctx in context_list:
+        context_data = db.retrieve_context_data(context_id=ctx['context_id'])
+        item_context_dict = device_context_dict.get(ctx['device_item_id'])
+        if not item_context_dict:
+            item_context_dict = dict()
+            device_context_dict[ctx['device_item_id']] = item_context_dict
+
+        subtype_set = item_context_dict.get(ctx['type'])
+        if not subtype_set:
+            subtype_set = set()
+            item_context_dict[ctx['type']] = subtype_set
+
+        for data in context_data:
+            subtype_name = data.get('sub_type')
+            if not subtype_name:
+                subtype_name = "None"
+            subtype_set.add(subtype_name)
+
+    series_context_list = db.retrieve_series_context()
+    device_series_context_dict = dict()
+    for ctx in series_context_list:
+        item_context_set = device_series_context_dict.get(ctx['device_item_id'])
+        if not item_context_set:
+            item_context_set = set()
+            device_series_context_dict[ctx['device_item_id']] = item_context_set
+        item_context_set.add(ctx['type'])
+
+    pprint.pprint(device_context_dict)
+    pprint.pprint(device_series_context_dict)
+
+    for device_item_id in device_context_dict.keys():
+        item_context_dict = device_context_dict[device_item_id]
+        for context_type in item_context_dict.keys():
+            subtype_set = item_context_dict[context_type]
+            for subtype in subtype_set:
+                data = list()
+                data.append(device_item_id)
+                data.append(context_type)
+                data.append(subtype)
+                data.append('context')
+                dt_list.append(data)
+
+    for device_item_id in device_series_context_dict.keys():
+        device_context_set = device_series_context_dict[device_item_id]
+        for context_type in device_context_set:
+            data = list()
+            data.append(device_item_id)
+            data.append(context_type)
+            data.append(None)
+            data.append('series')
+            dt_list.append(data)
+        req_context['dt_list'] = json.dumps(dt_list)
     return render(request, 'monitor/statistics.html', req_context)
 
+
+def statistics_detail_page(request, context_type, item_id, type, subtype=None):
+    item_id = int(item_id)
+    if subtype is None:
+        subtype = "None"
+
+    req_context = dict()
+    stat_info = dict()
+
+    stat_dict = statistics.get_statistics_dict(context_type=context_type,
+                                               device_item_id=item_id,
+                                               type=type, subtype=subtype)
+    pprint.pprint(stat_dict)
+    if context_type == 'context':
+        stat_data = stat_dict[item_id][type][subtype]
+        stat_info['item_id'] = item_id
+        stat_info['type'] = type
+        if subtype is None or subtype == "None":
+            stat_info['subtype'] = ''
+        else:
+            stat_info['subtype'] = subtype
+        stat_info['unit'] = stat_data['unit']
+        stat_info['num'] = stat_data['num']
+        stat_info['min'] = stat_data['min']
+        stat_info['max'] = stat_data['max']
+        stat_info['avg'] = stat_data['avg']
+        stat_info['var'] = stat_data['var']
+    elif context_type == 'series' or context_type == 'series_context':
+        stat_data = stat_dict[item_id][type]
+        stat_info['item_id'] = item_id
+        stat_info['type'] = type
+        stat_info['subtype'] = ''
+        stat_info['unit'] = stat_data['unit']
+        stat_info['num'] = stat_data['num']
+        stat_info['min'] = stat_data['min']
+        stat_info['max'] = stat_data['max']
+        stat_info['avg'] = stat_data['avg']
+        stat_info['var'] = stat_data['var']
+    req_context['statistics_info'] = stat_info
+    return render(request, 'monitor/statistics_detail.html', req_context)
 
 def test_page(request):
     context = dict()

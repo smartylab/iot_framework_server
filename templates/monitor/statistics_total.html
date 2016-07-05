@@ -11,7 +11,7 @@
     <section class="section">
         <div class="row">
             <div class="col-xs-12 col-title">
-                <h2 class="text-primary">Statistics for Context Type</h2>
+                <h2 class="text-primary">Total Statistics</h2>
             </div>
             <div class="col-xs-12 col-table">
                 <div class="table-container row">
@@ -51,19 +51,19 @@
                                 else return data
                             }
                         }},
+{#                        {title: "Unit", render: {#}
+{#                            "display": function(data) {#}
+{#                                if (data == null || data == "None")#}
+{#                                    return '';#}
+{#                                else return data#}
+{#                            }#}
+{#                        }},#}
+                        {title: "Min"},
+                        {title: "Max"},
+                        {title: "Avg"},
+                        {title: "Var"}
                     ]
                 });
-        $('#dataTable tbody').on('click', 'tr', function () {
-            $.LoadingOverlay('show');
-            var data = table.row(this).data();
-            if (data[2] == null || data[2] == "None")
-                location.href = '{% url 'monitor:statistics' %}/' + data[3] + '/' + data[0]
-                                + '/' + data[1];
-            else
-                location.href = '{% url 'monitor:statistics' %}/' + data[3] + '/' + data[0]
-                                + '/' + data[1] + '/' + data[2];
-            $.LoadingOverlay('hide');
-        });
     });
 </script>
 

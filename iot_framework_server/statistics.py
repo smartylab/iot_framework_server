@@ -3,7 +3,16 @@ import numpy
 import pprint
 from collections import Counter
 
-def get_statistics_dict(context_type, device_item_id=None, type=None, context_id=None,
+
+# def get_statistics_dict_about_type(context_type, device_item_id, type, subtype=None):
+#     db = db_manager.DbManager()
+#     statistics_dict = None
+#     if context_type == 'context':
+#
+#     pass
+
+
+def get_statistics_dict(context_type, device_item_id=None, context_id=None, type=None, subtype=None,
                         statistics_type=['min', 'max', 'avg', 'var'], remove_values=True):
     db = db_manager.DbManager()
     statistics_dict = None
@@ -29,6 +38,8 @@ def get_statistics_dict(context_type, device_item_id=None, type=None, context_id
                 subtype_name = data.get('sub_type')
                 if not subtype_name:
                     subtype_name = "None"
+                if subtype is not None and subtype_name != "None" and subtype != subtype_name:
+                    continue
                 subtype_dict = context_type_dict.get(subtype_name)
                 if not subtype_dict:
                     subtype_dict = dict()
@@ -68,6 +79,7 @@ def get_statistics_dict(context_type, device_item_id=None, type=None, context_id
                     subtype_dict['max'] = commons[0][0]
                 if 'min' in statistics_type:
                     subtype_dict['min'] = commons[len(commons)-1][0]
+            subtype_dict['num'] = len(subtype_dict['values'])
             if remove_values:
                 del subtype_dict['values']
         # pprint.pprint(device_context_dict)
@@ -106,6 +118,7 @@ def get_statistics_dict(context_type, device_item_id=None, type=None, context_id
                 context_type_dict['avg'] = numpy.average(context_type_dict['values'])
             if 'var' in statistics_type:
                 context_type_dict['var'] = numpy.var(context_type_dict['values'])
+            context_type_dict['num'] = len(context_type_dict['values'])
             if remove_values:
                 del context_type_dict['values']
         # pprint.pprint(device_series_context_dict)

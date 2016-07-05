@@ -1,0 +1,80 @@
+{% load staticfiles %}
+
+{% include 'monitor/template_header.html' %}
+
+<!-- custom css -->
+
+
+{% include 'monitor/template_nav.html' %}
+
+<div class="container">
+    <section class="section">
+        <div class="row">
+            <div class="col-xs-12 col-title">
+                <h2 class="text-primary">
+                    Statistics Detail
+                </h2>
+            </div>
+            <div class="col-xs-12 col-form" >
+                <div class="form-container form-boxed form-horizontal row">
+                    <div class="col-xs-12" style="margin-top: 20px;">
+                        <h4 id="tableStatisticsTitle" class="table-title">Statistics Information</h4>
+                        <table id="tableStatistics" class="table table-bordered" >
+                            <tbody>
+                            <tr>
+                                <td>Device Item ID</td>
+                                <td id="statItemId">{{ statistics_info.item_id }}</td>
+                            </tr>
+                            <tr>
+                                <td>Context Type</td>
+                                <td id="statType">{{ statistics_info.type }}</td>
+                            </tr>
+                            <tr>
+                                <td>Subtype</td>
+                                <td id="statSubtype">{{ statistics_info.subtype }}</td>
+                            </tr>
+                            <tr>
+                                <td>Unit</td>
+                                <td id="statUnit">{{ statistics_info.unit }}</td>
+                            </tr>
+                            <tr>
+                                <td># of Data</td>
+                                <td id="statNumber">{{ statistics_info.num }}</td>
+                            </tr>
+                            <tr>
+                                <td>Minimum</td>
+                                <td id="statMin">{{ statistics_info.min }}</td>
+                            </tr>
+                            <tr>
+                                <td>Maximum</td>
+                                <td id="statMax">{{ statistics_info.max }}</td>
+                            </tr>
+                            <tr>
+                                <td>Average</td>
+                                <td id="statAvg">{{ statistics_info.avg }}</td>
+                            </tr>
+                            <tr>
+                                <td>Variance</td>
+                                <td id="statVar">{{ statistics_info.var }}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+                <div class="form-btns-container row">
+                    <div id="btnFormCancel" class="col-xs-12 col-sm-12 col-md-4 col-md-offset-4 form-button">
+                        <a class="btn btn-lg btn-primary btn-block"
+                           onclick="javascript:history.back();">Back</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+{% include 'monitor/template_footer.html' %}
+
+</body>
+</html>

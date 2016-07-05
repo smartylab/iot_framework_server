@@ -19,6 +19,11 @@ urlpatterns = [
     url(r'^context/series_data/(?P<context_id>[0-9]+)$', views.context_data_page,
         {'series_type': 'series'}, name='series_context_data'),
     url(r'^context$', views.context_page, name='context'),
+    url(r'^statistics/(?P<context_type>[a-z]+)/(?P<item_id>[0-9]+)/(?P<type>[0-9a-zA-z%_ -]+)/(?P<subtype>[0-9a-zA-z%_ -]+)$',
+        views.statistics_detail_page, name='statistics_detail_subtype'),
+    url(r'^statistics/(?P<context_type>[a-z]+)/(?P<item_id>[0-9]+)/(?P<type>[0-9a-zA-z%_ -]+)$',
+        views.statistics_detail_page, name='statistics_detail'),
+    url(r'^statistics/total$', views.statistics_total_page, name='statistics_total'),
     url(r'^statistics$', views.statistics_page, name='statistics'),
 
     url(r'^index$', views.index_page),
