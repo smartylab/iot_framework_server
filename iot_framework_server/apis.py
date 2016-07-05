@@ -33,7 +33,7 @@ def handle_user_mgt(request):
                 raise Exception(constants.MSG_NO_REQUEST_DATA)
             user = json.loads(request.body.decode('utf-8'))
             if not db.add_user(user):
-                raise Exception(constants.MSG_INSERT_ERROR)
+                raise Exception(constants.MSG_ID_ALREADY_EXISTED)
             return JsonResponse(constants.CODE_SUCCESS)
 
         if request.method == 'PUT':
@@ -79,7 +79,7 @@ def handle_device_model_mgt(request):
                 raise Exception(constants.MSG_NO_REQUEST_DATA)
             device_model = json.loads(request.body.decode('utf-8'))
             if not db.add_device_model(device_model):
-                raise Exception(constants.MSG_INSERT_ERROR)
+                raise Exception(constants.MSG_MODEL_NAME_ALREADY_EXISTED)
             return JsonResponse(constants.CODE_SUCCESS)
 
         if request.method == 'PUT':
@@ -387,8 +387,8 @@ def handle_connection_mgt(request):
 
             device_item_id = data.get('device_item_id')
             device_item_address = data.get('device_item_address')
-            user_id = data.get('user_id')
-            password = data.get('password')
+            # user_id = data.get('user_id')
+            # password = data.get('password')
 
             if device_item_address:
                 device_item_address = check_network_address(device_item_address)
@@ -397,11 +397,11 @@ def handle_connection_mgt(request):
 
             if device_item_id is None and device_item_address is None:
                 raise Exception(constants.MSG_INVALID_PARAMETER)
-            if user_id is None or password is None:
-                raise Exception(constants.MSG_INVALID_PARAMETER)
 
-            if not db.retrieve_user(user_id=user_id, password=password):
-                raise Exception(constants.MSG_INVALID_PARAMETER)
+            # if user_id is None or password is None:
+            #     raise Exception(constants.MSG_INVALID_PARAMETER)
+            # if not db.retrieve_user(user_id=user_id, password=password):
+            #     raise Exception(constants.MSG_INVALID_USER)
 
             if not db.update_device_connection(item_id=device_item_id,
                                                item_address=device_item_address,
