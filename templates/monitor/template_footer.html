@@ -18,12 +18,34 @@
     </div>
 </div>
 
-{#<footer></footer>#}
+<footer class="page-footer">
+    <a id="btnLogShow">Log <span class="glyphicon glyphicon-menu-up" aria-hidden="true"></span></a>
+    <div class="container log-container">
+        <div class="log-header">
+            <span>Log</span>
+            <a id="btnLogHide" class="glyphicon glyphicon-menu-down pull-right" aria-hidden="true"></a>
+        </div>
+        <div id="log" class="log-body">
+        </div>
+    </div>
+    <div class="container footer-container">
+        <div class="footer-contents pull-left">
+            <span>Smartylab Corporation, Seoul, Korea&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <span>Tel. +82-2-826-0909&nbsp;&nbsp;&nbsp;</span>
+            <span><a href="http://smartylab.co.kr" target="_blank">http://smartylab.co.kr</a></span>
+        </div>
+        <a href="http://smartylab.co.kr" target="_blank" class="pull-right">
+            <image src="{% static 'iot_framework/img/logo.png' %}"  class="copyright-logo"></image>
+        </a>
+    </div>
+</footer>
+
 
 <!-- scripts -->
 <script src="{% static 'lib/jquery/jquery-2.2.0.min.js' %}"></script>
 <script src="{% static 'lib/bootstrap/js/bootstrap.min.js' %}"></script>
 <script src="{% static 'lib/jquery/plugins/loadingoverlay.min.js' %}"></script>
+<script src="{% static 'lib/jquery/plugins/js.cookie-2.1.2.min.js' %}"></script>
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
 <script src="{% static 'lib/bootstrap/assets/js/ie10-viewport-bug-workaround.js' %}"></script>
 <!-- init -->

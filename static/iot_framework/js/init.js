@@ -9,7 +9,38 @@ $(document).ready(function() {
         //$.LoadingOverlay('show');
     });
 
+    var showLog = Cookies.get('showLog');
+    if (showLog == 'true') showLog = true;
+    else showLog = false;
+    setLogDiv(showLog);
+
+    $('#btnLogShow').click(function() {
+        setLogDiv(true);
+    });
+    $('#btnLogHide').click(function() {
+        setLogDiv(false);
+    });
 });
+
+function setLogDiv(bShow) {
+    if (bShow == undefined || bShow == null) {
+        bShow = true;
+    }
+    if (bShow) {
+        Cookies.set('showLog', 'true');
+        $('.container.page-container, .page-footer').addClass('on-log');
+    } else {
+        Cookies.set('showLog', 'false');
+        $('.container.page-container, .page-footer').removeClass('on-log');
+    }
+}
+
+function addLog(log) {
+    var prevLog = $('#log').html();
+    log = prevLog + log + '<br/>';
+    $('#log').html(log);
+    $('#log').scrollTop($('#log')[0].scrollHeight);
+}
 
 function openModal(msg, title, action) {
     if (title==undefined || title==null || title=='') {

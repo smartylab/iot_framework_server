@@ -8,7 +8,7 @@ from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
 from django.views.decorators.csrf import csrf_exempt
 from django.core.cache import cache
 
-from . import constants, db_manager
+from . import constants, utils, statistics, db_manager
 # import constants, db_manager
 
 logging.basicConfig(
@@ -424,7 +424,34 @@ def handle_connection_mgt(request):
 
 @csrf_exempt
 def handle_statistics_mgt(request):
-    pass
+    db = db_manager.DbManager()
+    try:
+        if request.method == 'GET':
+            series_type = request.GET.get('series_type')
+            device_item_id = request.GET.get('device_item_id')
+            context_id = request.GET.get('context_id')
+            context_type = request.GET.get('context_type')
+            subtype = request.GET.get('subtype')
+            statistics_type = request.GET.get('statistics_type')
+            remove_values = request.GET.get('remove_values')
+
+            if not series_type:
+                raise Exception(constants.MSG_INVALID_PARAMETER)
+            if statistics_type is None:
+                statistics_type = ['min', 'max', 'avg', 'var']
+            if type(statistics_type) is not list:
+                raise Exception(constants.MSG_INVALID_PARAMETER)
+
+            stat_dict = statistics.get_statistics_dict(series_type, device_item_id, context_id,
+                                                       context_type, subtype, statistics_type, remove_values)
+            return JsonResponse(dict(constants.CODE_SUCCESS, **{'statistics': stat_dict}))
+        else:
+            raise Exception(constants.MSG_UNKNOWN_ERROR)
+    except Exception as e:
+        logger.exception(e)
+        return JsonResponse(dict(constants.CODE_FAILURE, **{'msg': str(e)}))
+    finally:
+        db.close()
 
 
 ### Utilities ###
