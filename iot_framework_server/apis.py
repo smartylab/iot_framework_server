@@ -326,6 +326,56 @@ def handle_series_context_mgt(request):
 
 
 @csrf_exempt
+def handle_context_retriever(request):
+    db = db_manager.DbManager()
+    logs = []
+    try:
+        if request.method == 'GET':
+            # logger.info(request.GET)
+            action = request.GET.get('action')
+            device_item_id = request.GET.get('device_item_id')
+            context_type = request.GET.get('context_type')
+            start_period = request.GET.get('start_period')
+            end_period = request.GET.get('end_period')
+            period = [start_period, end_period]
+            if action == 'context_count':
+                context_count = db.retrieve_number_of_context(device_item_id, context_type, period)
+                now_time = int(round(time.time() * 1000))
+                logs.append('### Check the Number of Searching Context List ###')
+                logs.append('[%s] The Number of Context List: %s'
+                            % (utils.timestamp_to_datetime(now_time), context_count))
+                return JsonResponse(dict(constants.CODE_SUCCESS,
+                                         **{'context_count': context_count,
+                                            'logs': logs}))
+            elif action == 'context_list':
+                limit = request.GET.get('limit')
+                offset = request.GET.get('offset')
+                logs.append('### Retrieve Context List ###')
+                retrieve_start_time = int(round(time.time() * 1000))
+                logs.append('[%s] Retrieving Context with LIMIT=%s and OFFSET=%s'
+                            % (utils.timestamp_to_datetime(retrieve_start_time), limit, offset))
+                context_list = db.retrieve_context_list(device_item_id, context_type, period,
+                                                        limit, offset)
+                retrieve_end_time = int(round(time.time() * 1000))
+                retrieving_time = retrieve_end_time - retrieve_start_time
+                logs.append('[%s] %s contexts were retrieved. Retrieving Time: %sms'
+                            % (utils.timestamp_to_datetime(retrieve_end_time),
+                               len(context_list), retrieving_time))
+                return JsonResponse(dict(constants.CODE_SUCCESS,
+                                         **{'context_list': context_list,
+                                            'logs': logs}))
+            else:
+                raise Exception(constants.MSG_INVALID_PARAMETER)
+        else:
+            raise Exception(constants.MSG_INVALID_PARAMETER)
+    except Exception as e:
+        logger.exception(e)
+        return JsonResponse(dict(constants.CODE_FAILURE, **{'msg': str(e)}))
+    finally:
+        db.close()
+
+
+@csrf_exempt
 def handle_connection_mgt(request):
     db = db_manager.DbManager()
     try:

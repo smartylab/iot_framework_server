@@ -27,6 +27,7 @@ urlpatterns = [
     url(r'^api/device_item$', apis.handle_device_item_mgt),
     url(r'^api/context$', apis.handle_context_mgt),
     url(r'^api/series_context$', apis.handle_series_context_mgt),
+    url(r'^api/context_retrieve$', apis.handle_context_retriever),
     url(r'^api/connect$', apis.handle_connection_mgt),
     url(r'^api/statistics$', apis.handle_statistics_mgt),
 

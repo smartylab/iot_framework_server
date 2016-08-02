@@ -133,6 +133,10 @@ def context_data_page(request, context_id, series_type='context'):
 
 def context_page(request):
     req_context = dict()
+    return render(request, 'monitor/context.html', req_context)
+
+def context_all_page(request):
+    req_context = dict()
     dt_list = list()
     db = db_manager.DbManager()
     context_list = db.retrieve_context()
@@ -163,7 +167,7 @@ def context_page(request):
             dt_list.append(data)
     req_context['dt_list'] = json.dumps(dt_list)
     db.close()
-    return render(request, 'monitor/context.html', req_context)
+    return render(request, 'monitor/context_all.html', req_context)
 
 
 def statistics_total_page(request):

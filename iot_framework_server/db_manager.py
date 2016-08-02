@@ -442,32 +442,55 @@ class DbManager:
             return context_id
         return is_inserted
 
-    def retrieve_context(self, context_id=None, device_item_id=None, type=None):
+    def retrieve_context(self, context_id=None, device_item_id=None, type=None,
+                         period=None, limit=10000, offset=0):
         contexts = []
         query = None
         select_values = None
 
+        optional_query = {
+            'limit': limit,
+            'offset': offset
+        }
+        if period is not None:
+            optional_query['start_time'] = period[0]
+            optional_query['end_time'] = period[1]
+        else:
+            optional_query['start_time'] = 0
+            optional_query['end_time'] = 32520455448000
+
+
         if context_id is not None:
-            query = "SELECT context_id, device_item_id, type, " \
-                    "time, extra FROM context WHERE context_id=%s ORDER BY time ASC"
+            query = "SELECT context_id, device_item_id, type, time, extra " \
+                    "FROM context WHERE context_id=%s " \
+                    "ORDER BY time ASC"
             select_values = context_id
         elif device_item_id is not None and type is not None:
-            query = "SELECT context_id, device_item_id, type, " \
-                    "time, extra FROM context WHERE device_item_id=%s and type=%s " \
-                    "ORDER BY time ASC"
+            query = "SELECT context_id, device_item_id, type, time, extra " \
+                    "FROM context WHERE device_item_id=%s and type=%s " \
+                    "and time>={start_time} and time<={end_time} " \
+                    "ORDER BY time ASC LIMIT {offset}, {limit}"
             select_values = (device_item_id, type)
         elif device_item_id is not None:
-            query = "SELECT context_id, device_item_id, type, " \
-                    "time, extra FROM context WHERE device_item_id=%s ORDER BY time ASC"
+            query = "SELECT context_id, device_item_id, type, time, extra " \
+                    "FROM context WHERE device_item_id=%s " \
+                    "and time>={start_time} and time<={end_time} " \
+                    "ORDER BY time ASC LIMIT {offset}, {limit}"
             select_values = device_item_id
         elif type is not None:
-            query = "SELECT context_id, device_item_id, type, " \
-                    "time, extra FROM context WHERE type=%s ORDER BY time ASC"
+            query = "SELECT context_id, device_item_id, type, time, extra " \
+                    "FROM context WHERE type=%s " \
+                    "and time>={start_time} and time<={end_time} " \
+                    "ORDER BY time ASC LIMIT {offset}, {limit}"
             select_values = type
         else:
-            query = "SELECT context_id, device_item_id, type, " \
-                    "time, extra FROM context ORDER BY time ASC"
+            query = "SELECT context_id, device_item_id, type, time, extra " \
+                    "FROM context " \
+                    "WHERE time>={start_time} and time<={end_time} " \
+                    "ORDER BY time ASC LIMIT {offset}, {limit}"
             select_values = None
+        query = query.format(**optional_query)
+        logger.info(query)
 
         with self.connector.cursor() as cursor:
             try:
@@ -566,32 +589,55 @@ class DbManager:
                 logger.exception(e)
         return is_inserted
 
-    def retrieve_series_context(self, context_id=None, device_item_id=None, type=None, json_load=True):
+    def retrieve_series_context(self, context_id=None, device_item_id=None, type=None,
+                                period=None, limit=10000, offset=0, json_load=True):
         contexts = []
         query = None
         select_values = None
 
+        optional_query = {
+            'limit': limit,
+            'offset': offset
+        }
+        if period is not None:
+            optional_query['start_time'] = period[0]
+            optional_query['end_time'] = period[1]
+        else:
+            optional_query['start_time'] = 0
+            optional_query['end_time'] = 32520455448000
+
         if context_id is not None:
             query = "SELECT context_id, device_item_id, type, " \
-                    "time_from, time_to, data FROM series_context WHERE context_id=%s ORDER BY time_from ASC"
+                    "time_from, time_to, data FROM series_context " \
+                    "WHERE context_id=%s and time_from>={start_time} and time_to<={end_time} " \
+                    "ORDER BY time_from, time_to ASC"
             select_values = context_id
         elif device_item_id is not None and type is not None:
             query = "SELECT context_id, device_item_id, type, " \
-                    "time_from, time_to, data FROM series_context WHERE device_item_id=%s and type=%s " \
-                    "ORDER BY time_from ASC"
+                    "time_from, time_to, data FROM series_context " \
+                    "WHERE device_item_id=%s and type=%s and time_from>={start_time} and time_to<={end_time} " \
+                    "ORDER BY time_from, time_to ASC LIMIT {offset}, {limit}"
             select_values = (device_item_id, type)
         elif device_item_id is not None:
             query = "SELECT context_id, device_item_id, type, " \
-                    "time_from, time_to, data FROM series_context WHERE device_item_id=%s ORDER BY time_from ASC"
+                    "time_from, time_to, data FROM series_context " \
+                    "WHERE device_item_id=%s and time_from>={start_time} and time_to<={end_time} " \
+                    "ORDER BY time_from, time_to ASC LIMIT {offset}, {limit}"
             select_values = device_item_id
         elif type is not None:
             query = "SELECT context_id, device_item_id, type, " \
-                    "time_from, time_to, data FROM series_context WHERE type=%s ORDER BY time_from ASC"
+                    "time_from, time_to, data FROM series_context " \
+                    "WHERE type=%s and time_from>={start_time} and time_to<={end_time} " \
+                    "ORDER BY time_from, time_to ASC LIMIT {offset}, {limit}"
             select_values = type
         else:
             query = "SELECT context_id, device_item_id, type, " \
-                    "time_from, time_to, data FROM series_context ORDER BY time_from ASC"
+                    "time_from, time_to, data FROM series_context " \
+                    "WHERE time_from>={start_time} and time_to<={end_time} " \
+                    "ORDER BY time_from, time_to ASC LIMIT {offset}, {limit}"
             select_values = None
+        query = query.format(**optional_query)
+        logger.info(query)
 
         with self.connector.cursor() as cursor:
             try:
@@ -611,6 +657,129 @@ class DbManager:
             except Exception as e:
                 logger.exception(e)
         return contexts
+
+    def retrieve_number_of_context(self, device_item_id=None, type=None, period=None):
+        query = None
+
+        optional_query = {}
+        if period is not None:
+            optional_query['start_time'] = period[0]
+            optional_query['end_time'] = period[1]
+        else:
+            optional_query['start_time'] = 0
+            optional_query['end_time'] = 32520455448000
+
+        if device_item_id is not None:
+            optional_query['item_id'] = device_item_id
+            query = "SELECT COUNT(*) FROM ( " \
+                    "  SELECT context_id, device_item_id, type, time, null as time_to " \
+                    "  FROM context " \
+                    "  WHERE device_item_id={item_id} and time>={start_time} and time<={end_time} " \
+                    "  UNION " \
+                    "  SELECT context_id, device_item_id, type, time_from as time, time_to " \
+                    "  FROM series_context " \
+                    "  WHERE device_item_id={item_id} and time_from>={start_time} and time_to<={end_time} " \
+                    ") as ctx_all"
+        elif type is not None:
+            optional_query['type'] = type
+            query = "SELECT COUNT(*) FROM ( " \
+                    "  SELECT context_id, device_item_id, type, time, null as time_to " \
+                    "  FROM context " \
+                    "  WHERE type LIKE '%{type}%' and time>={start_time} and time<={end_time} " \
+                    "  UNION " \
+                    "  SELECT context_id, device_item_id, type, time_from as time, time_to " \
+                    "  FROM series_context " \
+                    "  WHERE type LIKE '%{type}%' and time_from>={start_time} and time_to<={end_time} " \
+                    ") as ctx_all"
+        else:
+            query = "SELECT COUNT(*) FROM ( " \
+                    "  SELECT context_id, device_item_id, type, time, null as time_to " \
+                    "  FROM context " \
+                    "  WHERE time>={start_time} and time<={end_time} " \
+                    "  UNION " \
+                    "  SELECT context_id, device_item_id, type, time_from as time, time_to " \
+                    "  FROM series_context " \
+                    "  WHERE time_from>={start_time} and time_to<={end_time} " \
+                    ") as ctx_all"
+        query = query.format(**optional_query)
+        count = 0
+        with self.connector.cursor() as cursor:
+            try:
+                cursor.execute(query)
+                for row in cursor:
+                    count += row[0]
+            except Exception as e:
+                logger.exception(e)
+        return count
+
+    def retrieve_context_list(self, device_item_id=None, type=None, period=None, limit=None, offset=0):
+        context_list = []
+        query = None
+
+        if limit is None:
+            limit = 36893488147419103230  # maximum number of record in two tables, each is 18446744073709551615
+        optional_query = {
+            'limit': limit,
+            'offset': offset
+        }
+        if period is not None:
+            optional_query['start_time'] = period[0]
+            optional_query['end_time'] = period[1]
+        else:
+            optional_query['start_time'] = 0
+            optional_query['end_time'] = 32520455448000
+
+        if device_item_id is not None:
+            optional_query['item_id'] = device_item_id
+            query = "SELECT context_id, device_item_id, type, time, null as time_to " \
+                    "FROM context " \
+                    "WHERE device_item_id={item_id} and time>={start_time} and time<={end_time} " \
+                    "UNION " \
+                    "SELECT context_id, device_item_id, type, time_from as time, time_to " \
+                    "FROM series_context " \
+                    "WHERE device_item_id={item_id} and time_from>={start_time} and time_to<={end_time} " \
+                    "ORDER BY time DESC LIMIT {offset}, {limit}"
+        elif type is not None:
+            optional_query['type'] = type
+            query = "SELECT context_id, device_item_id, type, time, null as time_to " \
+                    "FROM context " \
+                    "WHERE type LIKE '%{type}%' and time>={start_time} and time<={end_time} " \
+                    "UNION " \
+                    "SELECT context_id, device_item_id, type, time_from as time, time_to " \
+                    "FROM series_context " \
+                    "WHERE type LIKE '%{type}%' and time_from>={start_time} and time_to<={end_time} " \
+                    "ORDER BY time DESC LIMIT {offset}, {limit}"
+        else:
+            query = "SELECT context_id, device_item_id, type, time, null as time_to " \
+                    "FROM context " \
+                    "WHERE time>={start_time} and time<={end_time} " \
+                    "UNION " \
+                    "SELECT context_id, device_item_id, type, time_from as time, time_to " \
+                    "FROM series_context " \
+                    "WHERE time_from>={start_time} and time_to<={end_time} " \
+                    "ORDER BY time DESC LIMIT {offset}, {limit}"
+        query = query.format(**optional_query)
+
+        with self.connector.cursor() as cursor:
+            try:
+                cursor.execute(query)
+                for row in cursor:
+                    context = dict()
+                    context['context_id'] = row[0]
+                    context['device_item_id'] = row[1]
+                    context['type'] = row[2]
+                    if row[4]:
+                        context['series_type'] = 'series'
+                        context['time_from'] = row[3]
+                        context['time_to'] = row[4]
+                    else:
+                        context['series_type'] = 'context'
+                        context['time'] = row[3]
+                    context_list.append(context)
+            except Exception as e:
+                logger.exception(e)
+        return context_list
+
 
 ### for test code ###
 if __name__ == "__main__":

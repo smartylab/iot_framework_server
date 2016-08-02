@@ -67,6 +67,16 @@ function openModal(msg, title, action) {
 
 }
 
+function isValidDate(dateString) {
+    var regEx = /^\d{4}-\d{2}-\d{2}$/;
+    if(!dateString.match(regEx))
+        return false;  // Invalid format
+    var d;
+    if(!((d = new Date(dateString))|0))
+        return false; // Invalid date (or this could be epoch)
+    return d.toISOString().slice(0,10) == dateString;
+}
+
 function checkTextOnlyAlphabetsAndNumber(text) {
     var regExp = /^[a-zA-Z0-9_ ,-]+$/;
     return regExp.test(text);
