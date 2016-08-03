@@ -352,7 +352,7 @@ def handle_context_retriever(request):
                 offset = request.GET.get('offset')
                 logs.append('### Retrieve Context List ###')
                 retrieve_start_time = int(round(time.time() * 1000))
-                logs.append('[%s] Retrieving Context with LIMIT=%s and OFFSET=%s'
+                logs.append('[%s] Retrieving context with LIMIT=%s and OFFSET=%s'
                             % (utils.timestamp_to_datetime(retrieve_start_time), limit, offset))
                 context_list = db.retrieve_context_list(device_item_id, context_type, period,
                                                         limit, offset)

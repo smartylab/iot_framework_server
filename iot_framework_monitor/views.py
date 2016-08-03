@@ -135,6 +135,7 @@ def context_page(request):
     req_context = dict()
     return render(request, 'monitor/context.html', req_context)
 
+
 def context_all_page(request):
     req_context = dict()
     dt_list = list()

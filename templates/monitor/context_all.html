@@ -77,9 +77,11 @@
             var context_id = data[3];
             var series_type = data[4];
             if (series_type == 'context') {
-                location.href = '{% url 'monitor:context' %}/data/' + context_id;
+                //location.href = '{% url 'monitor:context' %}/data/' + context_id;
+                window.open('{% url 'monitor:context' %}/data/' + context_id, 'ctxDetail');
             } else if (series_type == 'series') {
-                location.href = '{% url 'monitor:context' %}/series_data/' + context_id;
+                //location.href = '{% url 'monitor:context' %}/series_data/' + context_id;
+                window.open('{% url 'monitor:context' %}/series_data/' + context_id, 'ctxDetail');
             } else {
                 alert("Error!");
             }

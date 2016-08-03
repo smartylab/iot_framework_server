@@ -146,7 +146,7 @@
                 return;
             }
 
-            console.log(ajaxData);
+{#            console.log(ajaxData);#}
             $.LoadingOverlay('show');
             $.ajax("/api/context_retrieve", {
                 method: 'GET',
@@ -155,7 +155,7 @@
                     $.LoadingOverlay('hide');
                     if (res['code'] == 'SUCCESS' && res['context_count'] != undefined
                             && res['context_count'] != null && res['context_count'] > 0) {
-                        console.log(res);
+{#                        console.log(res);#}
                         var logs = res['logs'];
                         for (var i=0; i<logs.length; i++) {
                             addLog(logs[i]);
@@ -190,12 +190,14 @@
 
     function setContextListTable(dataList, nowPage, offset) {
         var tbody = $('#dataTable tbody');
+        $('#dataTable tbody tr').unbind('click').off('click')
         tbody.empty();
 
         var bOdd = true;
         for (var i=0; i<dataList.length; i++) {
             var data = dataList[i];
-            var htmlString = '<tr role="row" class="' + (bOdd? 'odd':'even') + '"><td>';
+            var htmlString = '<tr role="row" class="' + (bOdd? 'odd':'even') +
+                    '" data-id="' + data['context_id'] + '" data-type="' + data['series_type'] + '"><td>';
             bOdd = !bOdd;
             htmlString += data['device_item_id'] + '</td><td>';
             htmlString += data['type'] + '</td><td>';
@@ -208,6 +210,21 @@
             htmlString += '</td></tr>';
             tbody.append(htmlString);
         }
+        $('#dataTable tbody tr').click(function() {
+            $.LoadingOverlay('show');
+            var context_id = $(this).data('id');
+            var series_type = $(this).data('type');
+            if (series_type == 'context') {
+{#                location.href = '{% url 'monitor:context' %}/data/' + context_id;#}
+                window.open('{% url 'monitor:context' %}/data/' + context_id, 'ctxDetail');
+            } else if (series_type == 'series') {
+{#                location.href = '{% url 'monitor:context' %}/series_data/' + context_id;#}
+                window.open('{% url 'monitor:context' %}/series_data/' + context_id, 'ctxDetail');
+            } else {
+                alert("Error!");
+            }
+            $.LoadingOverlay('hide');
+        });
 
 
         $('#dataTable_info').text('Showing '+(offset+1)+' to '+(offset+dataList.length)+' of '+search_context_number+' entries');
@@ -334,7 +351,7 @@
             success: function(res) {
                 if (res['code'] == 'SUCCESS') {
                     $.LoadingOverlay('hide');
-                    console.log(res);
+{#                    console.log(res);#}
                     var logs = res['logs'];
                     for (var i = 0; i < logs.length; i++) {
                         addLog(logs[i]);
