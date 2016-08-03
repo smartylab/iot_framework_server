@@ -235,7 +235,7 @@
 {#                location.href = '{% url 'monitor:context' %}/series_data/' + context_id;#}
                 window.open('{% url 'monitor:context' %}/series_data/' + context_id, 'ctxDetail');
             } else {
-                alert("Error!");
+                openModal('Unknown Error!', "Search Failed");
             }
             $.LoadingOverlay('hide');
         });

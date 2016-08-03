@@ -30,6 +30,7 @@ urlpatterns = [
     url(r'^api/context_retrieve$', apis.handle_context_retriever),
     url(r'^api/connect$', apis.handle_connection_mgt),
     url(r'^api/statistics$', apis.handle_statistics_mgt),
+    url(r'^api/analyze', apis.handle_analyze_mgt),
 
     url(r'^', include('iot_framework_monitor.urls')),
 ]

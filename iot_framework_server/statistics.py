@@ -1,6 +1,6 @@
 from . import db_manager
 import numpy
-import pprint
+from pprint import pprint
 from collections import Counter
 
 
@@ -19,6 +19,7 @@ def get_statistics_dict(context_type, device_item_id=None, context_id=None, type
     if context_type == 'context':
         context_list = db.retrieve_context(device_item_id=device_item_id,
                                            type=type, context_id=context_id)
+        # pprint(context_list)
         subtype_list = list()
         device_context_dict = dict()
         for ctx in context_list:
@@ -60,7 +61,7 @@ def get_statistics_dict(context_type, device_item_id=None, context_id=None, type
                     except: pass
                 else:
                     subtype_dict['values'].append(data['value'])
-        # pprint.pprint(device_context_dict)
+        # pprint(device_context_dict)
 
         for subtype_dict in subtype_list:
             if subtype_dict['datatype'] == 'numeric':
@@ -82,13 +83,14 @@ def get_statistics_dict(context_type, device_item_id=None, context_id=None, type
             subtype_dict['num'] = len(subtype_dict['values'])
             if remove_values:
                 del subtype_dict['values']
-        # pprint.pprint(device_context_dict)
+        # pprint(device_context_dict)
 
         statistics_dict = device_context_dict
 
     elif context_type == 'series' or context_type == 'series_context':
         series_context_list = db.retrieve_series_context(device_item_id=device_item_id,
                                                          type=type, context_id=context_id)
+        # pprint(series_context_list)
         context_type_list = list()
         device_series_context_dict = dict()
         for ctx in series_context_list:
@@ -107,7 +109,7 @@ def get_statistics_dict(context_type, device_item_id=None, context_id=None, type
                 context_type_list.append(context_type_dict)
             if ctx['data'].get('value'):
                 context_type_dict['values'].extend(list(map(float, ctx['data']['value'])))
-        # pprint.pprint(device_series_context_dict)
+        # pprint(device_series_context_dict)
 
         for context_type_dict in context_type_list:
             if 'min' in statistics_type:
@@ -121,7 +123,7 @@ def get_statistics_dict(context_type, device_item_id=None, context_id=None, type
             context_type_dict['num'] = len(context_type_dict['values'])
             if remove_values:
                 del context_type_dict['values']
-        # pprint.pprint(device_series_context_dict)
+        # pprint(device_series_context_dict)
 
         statistics_dict = device_series_context_dict
 

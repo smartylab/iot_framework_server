@@ -15,7 +15,23 @@
             </div>
             <div class="col-xs-12 col-table">
                 <div class="table-container row">
-                    <div class="table-title col-xs-12 col-md-4">Statistics List</div>
+                    <div class="col-xs-12 col-sm-5">
+                        <label>Device Item ID:</label>
+                        <input id="deviceItemId" type="search" class="form-control" aria-controls="dataTable">
+                    </div>
+                    <div class="col-xs-12 col-sm-5">
+                        <label>Context Type:</label>
+                        <input id="contextType" type="search" class="form-control" aria-controls="dataTable">
+                    </div>
+                    <div class="col-xs-12 col-sm-2">
+                        <button id="btnStatistics" class="btn btn-primary col-xs-12">
+                            Analyze<br class="hidden-xs"/> Statistics</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-table">
+                <div class="table-container row">
+                    <div class="table-title col-xs-12 col-md-4">Statistics Summary List</div>
                     <table id="dataTable" class="table table-striped table-bordered table-hover display"
                            width="100%"></table>
                 </div>
@@ -30,41 +46,108 @@
 <script src="{% static 'lib/datatable/js/jquery.dataTables.js' %}"></script>
 <script src="{% static 'lib/datatable/js/dataTables.bootstrap.js' %}"></script>
 <script>
-    var dataSet = {{ dt_list | safe }};
+    var dataTable = null;
 
     $(document).ready(function () {
+        $('#btnStatistics').click(function() {
+            var itemID = $('#deviceItemId').val();
+            var contextType = $('#contextType').val();
+
+            if (!/\S/.test(itemID) && !/\S/.test(contextType)) {
+                setDataTable([]);
+                openModal('Both Device Item ID and Context Type are empty.<br/>Please fill one field at least.', "Search Failed");
+                return;
+            }
+
+            var ajaxData = {};
+            if (!/\S/.test(itemID)) {
+                itemID = null;
+            } else {
+                if (itemID.match(/^[0-9]+$/) == null) {
+                    openModal('Device Item ID must be natural number', "Search Failed");
+                    return;
+                }
+                itemID = parseInt(itemID);
+                console.log(itemID);
+                if (itemID == null || isNaN(itemID)) {
+                    openModal('Device Item ID must be natural number', "Search Failed");
+                    return;
+                }
+                ajaxData['device_item_id'] = itemID;
+            }
+
+            if (!/\S/.test(contextType)) {
+                contextType = null;
+            } else {
+                ajaxData['context_type'] = contextType;
+            }
+
+            $.LoadingOverlay('show');
+            $.ajax("/api/analyze", {
+                method: 'GET',
+                data: ajaxData,
+                success: function(res) {
+                    $.LoadingOverlay('hide');
+                    console.log(res);
+                    if (res['code'] == 'SUCCESS') {
+                        setDataTable(res['statistics']);
+                    } else {
+                        openModal(res['msg'], "Context Analyze Failure");
+                    }
+                }
+            })
+        });
+
+        setDataTable([]);
+    });
+
+    function setDataTable(dataList) {
+{#        $('#dataTable tbody').off('click', 'tr');#}
+{#        $('#dataTable tbody').off('click');#}
+{#        $('#dataTable').empty();#}
+        if (dataTable != null) {
+            dataTable.destroy();
+        }
+
         $.LoadingOverlay('show');
-        var table = $('#dataTable')
-                .DataTable({
-                    "fnInitComplete": function(oSettings){
-                        $.LoadingOverlay('hide')
-                    },
-                    data: dataSet,
-                    order: [[0, "asc"], [1, "asc"], [2, "asc"]],
-                    columns: [
-                        {title: "Device Item ID"},
-                        {title: "Context Type"},
-                        {title: "Subtype", render: {
-                            "display": function(data) {
-                                if (data == null || data == "None")
-                                    return '';
-                                else return data
-                            }
-                        }},
-                    ]
-                });
+        dataTable = $('#dataTable').DataTable({
+            "fnInitComplete": function(oSettings){
+                $.LoadingOverlay('hide')
+            },
+            data: dataList,
+            order: [[0, "asc"], [1, "asc"], [2, "asc"]],
+            columns: [
+                {title: "Device Item ID"},
+                {title: "Context Type"},
+                {title: "Subtype", render: {
+                    "display": function(data) {
+                        if (data == null || data == "None")
+                            return '';
+                        else return data
+                    }
+                }},
+                {title: "Min"},
+                {title: "Max"},
+                {title: "Avg"},
+                {title: "Var"}
+            ]
+        });
         $('#dataTable tbody').on('click', 'tr', function () {
             $.LoadingOverlay('show');
-            var data = table.row(this).data();
+            var data = dataTable.row(this).data();
+            if (data==undefined || data==null || data.length==0) {
+                $.LoadingOverlay('hide');
+                return;
+            }
             if (data[2] == null || data[2] == "None")
-                location.href = '{% url 'monitor:statistics' %}/' + data[3] + '/' + data[0]
+                location.href = '{% url 'monitor:statistics' %}/' + data[7] + '/' + data[0]
                                 + '/' + data[1];
             else
-                location.href = '{% url 'monitor:statistics' %}/' + data[3] + '/' + data[0]
+                location.href = '{% url 'monitor:statistics' %}/' + data[7] + '/' + data[0]
                                 + '/' + data[1] + '/' + data[2];
             $.LoadingOverlay('hide');
         });
-    });
+    }
 </script>
 
 </body>

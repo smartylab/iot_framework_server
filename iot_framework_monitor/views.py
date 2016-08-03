@@ -132,8 +132,7 @@ def context_data_page(request, context_id, series_type='context'):
 
 
 def context_page(request):
-    req_context = dict()
-    return render(request, 'monitor/context.html', req_context)
+    return render(request, 'monitor/context.html')
 
 
 def context_all_page(request):
@@ -275,6 +274,10 @@ def statistics_page(request):
             dt_list.append(data)
         req_context['dt_list'] = json.dumps(dt_list)
     return render(request, 'monitor/statistics.html', req_context)
+
+
+def analytics_statistics_page(request):
+    return render(request, 'monitor/statistics.html')
 
 
 def statistics_detail_page(request, context_type, item_id, type, subtype=None):

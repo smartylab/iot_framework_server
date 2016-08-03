@@ -504,6 +504,68 @@ def handle_statistics_mgt(request):
         db.close()
 
 
+@csrf_exempt
+def handle_analyze_mgt(request):
+    db = db_manager.DbManager()
+    try:
+        if request.method == 'GET':
+            device_item_id = request.GET.get('device_item_id')
+            context_type = request.GET.get('context_type')
+
+            if device_item_id is not None:
+                device_item_id = int(device_item_id)
+
+            dt_list = list()
+            context_stat_dict = statistics.get_statistics_dict(context_type='context',
+                                                               device_item_id=device_item_id, type=context_type)
+            series_stat_dict = statistics.get_statistics_dict(context_type='series_context',
+                                                              device_item_id=device_item_id, type=context_type)
+
+            for device_item_id in context_stat_dict.keys():
+                device_context_dict = context_stat_dict[device_item_id]
+                for context_type in device_context_dict.keys():
+                    context_type_dict = device_context_dict[context_type]
+                    for subtype in context_type_dict.keys():
+                        subtype_dict = context_type_dict[subtype]
+                        data = list()
+                        data.append(device_item_id)
+                        data.append(context_type)
+                        data.append(subtype)
+                        # data.append(subtype_dict.get('unit'))
+                        data.append(subtype_dict.get('min'))
+                        data.append(subtype_dict.get('max'))
+                        data.append(subtype_dict.get('avg'))
+                        data.append(subtype_dict.get('var'))
+                        data.append('context')
+                        dt_list.append(data)
+
+            for device_item_id in series_stat_dict.keys():
+                device_context_dict = series_stat_dict[device_item_id]
+                for context_type in device_context_dict.keys():
+                    context_type_dict = device_context_dict[context_type]
+                    data = list()
+                    data.append(device_item_id)
+                    data.append(context_type)
+                    data.append(None)
+                    # data.append(context_type_dict.get('unit'))
+                    data.append(context_type_dict.get('min'))
+                    data.append(context_type_dict.get('max'))
+                    data.append(context_type_dict.get('avg'))
+                    data.append(context_type_dict.get('var'))
+                    data.append('series')
+                    dt_list.append(data)
+            pprint(dt_list)
+            return JsonResponse(dict(constants.CODE_SUCCESS, **{'statistics': dt_list}))
+
+        else:
+            raise Exception(constants.MSG_UNKNOWN_ERROR)
+    except Exception as e:
+        logger.exception(e)
+        return JsonResponse(dict(constants.CODE_FAILURE, **{'msg': str(e)}))
+    finally:
+        db.close()
+
+
 ### Utilities ###
 def check_network_address(net_addr):
     regexp_ipv4 = r'^(([1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[.]){3}([1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$'
