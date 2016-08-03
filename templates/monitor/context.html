@@ -182,16 +182,30 @@
                         search_context_number = 0;
                         search_page_count = 0;
                         search_page_limit = 0;
+
+                        setContextListTable(null);
                     }
                 }
             });
         });
+
+        setContextListTable(null);
     });
 
     function setContextListTable(dataList, nowPage, offset) {
         var tbody = $('#dataTable tbody');
-        $('#dataTable tbody tr').unbind('click').off('click')
+        $('#dataTable tbody tr').unbind('click').off('click');
         tbody.empty();
+
+        if (dataList==undefined || dataList==null || dataList.length==0) {
+            var htmlString = '<tr class="odd"><td valign="top" colspan="3" class="dataTables_empty">No data available in table</td></tr>';
+            tbody.append(htmlString);
+            $('#dataTable_info').text("");
+            var pagination = $('#dataTable_paginate .pagination');
+            pagination.find('.paginate_button').unbind('click').off('click');
+            pagination.empty();
+            return;
+        }
 
         var bOdd = true;
         for (var i=0; i<dataList.length; i++) {
