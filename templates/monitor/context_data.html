@@ -94,7 +94,7 @@ $(document).ready(function () {
     $('#tableContextData .thead-tr').html(thHtmlString);
     var tbodyHtmlString = "";
     for (var i=0; i<data.length; i++) {
-        tbodyHtmlString += "<tr><td>" + data[i]['sub_type'] + "</td>"
+        tbodyHtmlString += "<tr><td>" + (data[i]['sub_type']==null? "":data[i]['sub_type']) + "</td>"
                         + "<td>" + (data[i]['time']==null? "":new Date(data[i]['time']).format("yyyy/MM/dd HH:mm:ss.ccc")) + "</td>"
                         + "<td>" + data[i]['value'] + " " + (data[i]['unit']==null? "":data[i]['unit']) + "</td></tr>"
     }
