@@ -337,11 +337,15 @@ def handle_context_retriever(request):
             context_type = request.GET.get('context_type')
             start_period = request.GET.get('start_period')
             end_period = request.GET.get('end_period')
+
             period = [start_period, end_period]
+            if device_item_id is not None:
+                device_item_id = int(device_item_id)
+
             if action == 'context_count':
                 context_count = db.retrieve_number_of_context(device_item_id, context_type, period)
                 now_time = int(round(time.time() * 1000))
-                logs.append('### Check the Number of Searching Context List ###')
+                logs.append('##### Check the Number of Searching Context List #####')
                 logs.append('[%s] The Number of Context List: %s'
                             % (utils.timestamp_to_datetime(now_time), context_count))
                 return JsonResponse(dict(constants.CODE_SUCCESS,
@@ -350,7 +354,7 @@ def handle_context_retriever(request):
             elif action == 'context_list':
                 limit = request.GET.get('limit')
                 offset = request.GET.get('offset')
-                logs.append('### Retrieve Context List ###')
+                logs.append('##### Retrieve Context List #####')
                 retrieve_start_time = int(round(time.time() * 1000))
                 logs.append('[%s] Retrieving context with LIMIT=%s and OFFSET=%s'
                             % (utils.timestamp_to_datetime(retrieve_start_time), limit, offset))
@@ -515,6 +519,11 @@ def handle_analyze_mgt(request):
             if device_item_id is not None:
                 device_item_id = int(device_item_id)
 
+            logs = []
+            logs.append('##### Analyze Statistics #####')
+            analyze_start_time = int(round(time.time() * 1000))
+            logs.append('[%s] Start analyzing statistics.' % analyze_start_time)
+
             dt_list = list()
             context_stat_dict = statistics.get_statistics_dict(context_type='context',
                                                                device_item_id=device_item_id, type=context_type)
@@ -554,8 +563,15 @@ def handle_analyze_mgt(request):
                     data.append(context_type_dict.get('var'))
                     data.append('series')
                     dt_list.append(data)
-            pprint(dt_list)
-            return JsonResponse(dict(constants.CODE_SUCCESS, **{'statistics': dt_list}))
+
+            analyze_end_time = int(round(time.time() * 1000))
+            analyzing_time = analyze_end_time - analyze_start_time
+            logs.append('[%s] Analyze statistics is done. Analyzing Time: %sms'
+                        % (utils.timestamp_to_datetime(analyze_end_time), analyzing_time))
+
+            # pprint(dt_list)
+            return JsonResponse(dict(constants.CODE_SUCCESS, **{'statistics': dt_list,
+                                                                'logs': logs}))
 
         else:
             raise Exception(constants.MSG_UNKNOWN_ERROR)

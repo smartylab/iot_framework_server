@@ -64,13 +64,13 @@
                 itemID = null;
             } else {
                 if (itemID.match(/^[0-9]+$/) == null) {
-                    openModal('Device Item ID must be natural number', "Search Failed");
+                    openModal('Device Item ID must be natural number', "Analyze Failed");
                     return;
                 }
                 itemID = parseInt(itemID);
                 console.log(itemID);
                 if (itemID == null || isNaN(itemID)) {
-                    openModal('Device Item ID must be natural number', "Search Failed");
+                    openModal('Device Item ID must be natural number', "Analyze Failed");
                     return;
                 }
                 ajaxData['device_item_id'] = itemID;
@@ -90,15 +90,20 @@
                     $.LoadingOverlay('hide');
                     console.log(res);
                     if (res['code'] == 'SUCCESS') {
+                        var logs = res['logs'];
+                        for (var i = 0; i < logs.length; i++) {
+                            addLog(logs[i]);
+                        }
                         setDataTable(res['statistics']);
+
                     } else {
-                        openModal(res['msg'], "Context Analyze Failure");
+                        openModal(res['msg'], "Analyze Failure");
                     }
                 }
             })
         });
 
-        setDataTable([]);
+        setDataTable(null);
     });
 
     function setDataTable(dataList) {
@@ -126,10 +131,30 @@
                         else return data
                     }
                 }},
-                {title: "Min"},
-                {title: "Max"},
-                {title: "Avg"},
-                {title: "Var"}
+                {title: "Min", render: {
+                    "display": function(data) {
+                        if (isNaN(data)) return data;
+                        else return parseInt(parseFloat(data)*1000)/1000;
+                    }
+                }},
+                {title: "Max", render: {
+                    "display": function(data) {
+                        if (isNaN(data)) return data;
+                        else return parseInt(parseFloat(data)*1000)/1000;
+                    }
+                }},
+                {title: "Avg", render: {
+                    "display": function(data) {
+                        if (isNaN(data)) return data;
+                        else return parseInt(parseFloat(data)*1000)/1000;
+                    }
+                }},
+                {title: "Var", render: {
+                    "display": function(data) {
+                        if (isNaN(data)) return data;
+                        else return parseInt(parseFloat(data)*1000)/1000;
+                    }
+                }}
             ]
         });
         $('#dataTable tbody').on('click', 'tr', function () {
@@ -140,13 +165,21 @@
                 return;
             }
             if (data[2] == null || data[2] == "None")
-                location.href = '{% url 'monitor:statistics' %}/' + data[7] + '/' + data[0]
-                                + '/' + data[1];
+{#                location.href = '{% url 'monitor:statistics' %}/' + data[7] + '/' + data[0]#}
+{#                                + '/' + data[1];#}
+                window.open('{% url 'monitor:statistics' %}/' +
+                            data[7] + '/' + data[0] + '/' + data[1], 'ctxStatistics');
             else
-                location.href = '{% url 'monitor:statistics' %}/' + data[7] + '/' + data[0]
-                                + '/' + data[1] + '/' + data[2];
+{#                location.href = '{% url 'monitor:statistics' %}/' + data[7] + '/' + data[0]#}
+{#                                + '/' + data[1] + '/' + data[2];#}
+                window.open('{% url 'monitor:statistics' %}/' +
+                            data[7] + '/' + data[0] + '/' + data[1] + '/' + data[2], 'ctxStatistics');
             $.LoadingOverlay('hide');
         });
+
+        if (dataList!=undefined && dataList!=null && dataList.length==0) {
+            openModal('There is no matched statistics data.', "Analyze Statistics");
+        }
     }
 </script>
 
