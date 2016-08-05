@@ -331,7 +331,7 @@ def handle_context_retriever(request):
     logs = []
     try:
         if request.method == 'GET':
-            # logger.info(request.GET)
+            logger.info(request.GET)
             action = request.GET.get('action')
             device_item_id = request.GET.get('device_item_id')
             context_type = request.GET.get('context_type')
@@ -368,6 +368,23 @@ def handle_context_retriever(request):
                 return JsonResponse(dict(constants.CODE_SUCCESS,
                                          **{'context_list': context_list,
                                             'logs': logs}))
+
+            elif action == 'recent':
+                limit = request.GET.get('limit')
+                logs.append('##### Retrieve Recent Context List #####')
+                retrieve_start_time = int(round(time.time() * 1000))
+                logs.append('[%s] Retrieving %s recent contexts.'
+                            % (utils.timestamp_to_datetime(retrieve_start_time), limit))
+                context_list = db.retrieve_context_list(limit=limit)
+                retrieve_end_time = int(round(time.time() * 1000))
+                retrieving_time = retrieve_end_time - retrieve_start_time
+                logs.append('[%s] %s contexts were retrieved. Retrieving Time: %sms'
+                            % (utils.timestamp_to_datetime(retrieve_end_time),
+                               len(context_list), retrieving_time))
+                return JsonResponse(dict(constants.CODE_SUCCESS,
+                                         **{'context_list': context_list,
+                                            'logs': logs}))
+
             else:
                 raise Exception(constants.MSG_INVALID_PARAMETER)
         else:

@@ -17,8 +17,11 @@
                 <div class="table-container row">
                     <div class="table-title col-xs-12 col-md-4">Context List</div>
                     <div class="dataTables_wrapper form-inline">
-                        <div class="row"> <!-- Search Form -->
-                            <div class="col-xs-12" style="padding-bottom: 5px;">
+                        <form id="searchForm" class="row"> <!-- Search Form -->
+{#                            <div class="col-xs-12 col-sm-3" style="padding-bottom: 5px;">#}
+{#                                <button class="btn btn-primary" id="btnShowRecent">Show Recent Contexts</button>#}
+{#                            </div>#}
+                            <div class="col-xs-12 col-sm-12" style="padding-bottom: 5px;">
                                 <div class="pull-right">
                                     <label>Period:</label>
                                     <input id="searchStartDate" type="date" placeholder="yyyy-MM-dd" class="form-control">
@@ -50,10 +53,10 @@
                                         <option value="contextType">Context Type</option>
                                     </select>
                                     <input id="searchContextText" type="search" class="form-control" aria-controls="dataTable">
-                                    <button id="btnContextSearch" class="btn btn-primary">Search</button>
+                                    <button id="btnContextSearch" class="btn btn-primary" type="submit">Search</button>
                                 </div>
                             </div>
-                        </div>
+                        </form>
                         <div class="row"> <!-- Table -->
                             <div class="col-sm-12">
                                 <table id="dataTable" class="table table-striped table-bordered table-hover dataTable"
@@ -111,22 +114,43 @@
     var search_page_limit = 0;
 
     $(document).ready(function () {
-        $('#btnContextSearch').click(function() {
+{#        $('#btnShowRecent').click(function() {#}
+{##}
+{#        });#}
+
+        $('#searchForm').submit(function(e) {
+            e.preventDefault();
+
             var startDate = $('#searchStartDate').val();
             var endDate = $('#searchEndDate').val();
             var type = $('#searchContextType').val();
             var text = $('#searchContextText').val();
 
             if (!/\S/.test(text)) {
-                openModal('The search text is empty.', "Search Failed");
-                return;
+                //openModal('The search text is empty.', "Search Failed");
+                //return;
+                text = null;
             }
-            if (!isValidDate(startDate) || !isValidDate(endDate)) {
-                openModal("The typing form of 'Period' is 'yyyy-MM-dd'.<br/>Please use this pattern.<br/><br/>ex) 2016-04-16", "Search Failed");
-                return;
+
+            var startTime = -62167219200000;
+            var endTime = 32520455448000;
+
+            if (/\S/.test(startDate)) {
+                if (!isValidDate(startDate)) {
+                    openModal("The typing form of 'Period' is 'yyyy-MM-dd'.<br/>Please use this pattern.<br/><br/>ex) 2016-04-16", "Search Failed");
+                    return;
+                }
+                startTime = new Date(startDate).getTime() - 9*3600000; // 0:00:00 for KR timezone (GMT-9)
             }
-            var startTime = new Date(startDate).getTime() - 9*3600000; // 0:00:00 for KR timezone (GMT-9)
-            var endTime = new Date(endDate).getTime() + 15*3600000 - 1; //0시 0분 0초 //23:59:59.999 for KR timezone (GMT-9)
+
+            if (/\S/.test(endDate)) {
+                if (!isValidDate(endDate)) {
+                    openModal("The typing form of 'Period' is 'yyyy-MM-dd'.<br/>Please use this pattern.<br/><br/>ex) 2016-04-16", "Search Failed");
+                    return;
+                }
+                endTime = new Date(endDate).getTime() + 15*3600000 - 1; //0시 0분 0초 //23:59:59.999 for KR timezone (GMT-9)
+            }
+
             if (endTime < startTime) {
                 openModal("The start time of period is larger than the end time of period.", "Search Failed");
                 return;
@@ -137,24 +161,27 @@
                 start_period : startTime,
                 end_period: endTime
             };
-            if (type == 'deviceId') {
-                var itemID = text;
-                if (itemID.match(/^[0-9]+$/) == null) {
-                    openModal('Device Item ID must be natural number', "Search Failure");
+
+            if (text != null) {
+                if (type == 'deviceId') {
+                    var itemID = text;
+                    if (itemID.match(/^[0-9]+$/) == null) {
+                        openModal('Device Item ID must be natural number', "Search Failure");
+                        return;
+                    }
+                    itemID = parseInt(itemID);
+                    console.log(itemID);
+                    if (itemID == null || isNaN(itemID)) {
+                        openModal('Device Item ID must be natural number', "Search Failure");
+                        return;
+                    }
+                    ajaxData['device_item_id'] = itemID;
+                } else if (type == 'contextType') {
+                    ajaxData['context_type'] = text;
+                } else {
+                    openModal("Search Type Error.", "Search Failed");
                     return;
                 }
-                itemID = parseInt(itemID);
-                console.log(itemID);
-                if (itemID == null || isNaN(itemID)) {
-                    openModal('Device Item ID must be natural number', "Search Failure");
-                    return;
-                }
-                ajaxData['device_item_id'] = itemID;
-            } else if (type == 'contextType') {
-                ajaxData['context_type'] = text;
-            } else {
-                openModal("Search Type Error.", "Search Failed");
-                return;
             }
 
 {#            console.log(ajaxData);#}
@@ -359,13 +386,16 @@
             'limit': search_page_limit,
             'offset': offset
         };
-        if (search_type == 'deviceId') {
-            ajaxData['device_item_id'] = search_text;
-        } else if (search_type == 'contextType') {
-            ajaxData['context_type'] = search_text;
-        } else {
-            openModal("Search Type Error.", "Search Failure");
-            return;
+
+        if (search_text != null) {
+            if (search_type == 'deviceId') {
+                ajaxData['device_item_id'] = search_text;
+            } else if (search_type == 'contextType') {
+                ajaxData['context_type'] = search_text;
+            } else {
+                openModal("Search Type Error.", "Search Failure");
+                return;
+            }
         }
 
         $.LoadingOverlay('show');

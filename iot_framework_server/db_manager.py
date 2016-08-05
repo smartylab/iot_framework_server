@@ -716,6 +716,8 @@ class DbManager:
         context_list = []
         query = None
 
+        if offset is None:
+            offset = 0
         if limit is None:
             limit = 36893488147419103230  # maximum number of record in two tables, each is 18446744073709551615
         optional_query = {
