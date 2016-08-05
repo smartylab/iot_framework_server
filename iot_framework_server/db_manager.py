@@ -443,10 +443,15 @@ class DbManager:
         return is_inserted
 
     def retrieve_context(self, context_id=None, device_item_id=None, type=None,
-                         period=None, limit=10000, offset=0):
+                         period=None, limit=None, offset=0):
         contexts = []
         query = None
         select_values = None
+
+        if offset is None:
+            offset = 0
+        if limit is None:
+            limit = 18446744073709551615
 
         optional_query = {
             'limit': limit,
@@ -458,7 +463,6 @@ class DbManager:
         else:
             optional_query['start_time'] = 0
             optional_query['end_time'] = 32520455448000
-
 
         if context_id is not None:
             query = "SELECT context_id, device_item_id, type, time, extra " \
@@ -590,10 +594,15 @@ class DbManager:
         return is_inserted
 
     def retrieve_series_context(self, context_id=None, device_item_id=None, type=None,
-                                period=None, limit=10000, offset=0, json_load=True):
+                                period=None, limit=None, offset=0, json_load=True):
         contexts = []
         query = None
         select_values = None
+
+        if offset is None:
+            offset = 0
+        if limit is None:
+            limit = 18446744073709551615
 
         optional_query = {
             'limit': limit,

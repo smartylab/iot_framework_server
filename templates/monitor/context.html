@@ -142,7 +142,6 @@
                 }
                 startTime = new Date(startDate).getTime() - 9*3600000; // 0:00:00 for KR timezone (GMT-9)
             }
-
             if (/\S/.test(endDate)) {
                 if (!isValidDate(endDate)) {
                     openModal("The typing form of 'Period' is 'yyyy-MM-dd'.<br/>Please use this pattern.<br/><br/>ex) 2016-04-16", "Search Failed");
@@ -150,7 +149,6 @@
                 }
                 endTime = new Date(endDate).getTime() + 15*3600000 - 1; //0시 0분 0초 //23:59:59.999 for KR timezone (GMT-9)
             }
-
             if (endTime < startTime) {
                 openModal("The start time of period is larger than the end time of period.", "Search Failed");
                 return;

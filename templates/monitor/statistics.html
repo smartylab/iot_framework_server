@@ -14,7 +14,15 @@
                 <h2 class="text-primary">Analyze Statistics</h2>
             </div>
             <div class="col-xs-12 col-table">
-                <div class="table-container row">
+                <form id="statisticsForm" class="table-container row">
+                    <div class="col-xs-12 col-sm-12" style="padding-bottom: 5px;">
+                        <div class="form-inline">
+                            <label>Period:</label><br/>
+                            <input id="searchStartDate" type="date" placeholder="yyyy-MM-dd" class="form-control">
+                            ~
+                            <input id="searchEndDate" type="date" placeholder="yyyy-MM-dd" class="form-control">
+                        </div>
+                    </div>
                     <div class="col-xs-12 col-sm-5">
                         <label>Device Item ID:</label>
                         <input id="deviceItemId" type="search" class="form-control" aria-controls="dataTable">
@@ -24,10 +32,10 @@
                         <input id="contextType" type="search" class="form-control" aria-controls="dataTable">
                     </div>
                     <div class="col-xs-12 col-sm-2">
-                        <button id="btnStatistics" class="btn btn-primary col-xs-12">
+                        <button id="btnStatistics" class="btn btn-primary col-xs-12" type="submit">
                             Analyze<br class="hidden-xs"/> Statistics</button>
                     </div>
-                </div>
+                </form>
             </div>
             <div class="col-xs-12 col-table">
                 <div class="table-container row">
@@ -49,17 +57,47 @@
     var dataTable = null;
 
     $(document).ready(function () {
-        $('#btnStatistics').click(function() {
+        $('#statisticsForm').submit(function(e) {
+            e.preventDefault();
+
+            var startDate = $('#searchStartDate').val();
+            var endDate = $('#searchEndDate').val();
             var itemID = $('#deviceItemId').val();
             var contextType = $('#contextType').val();
 
             if (!/\S/.test(itemID) && !/\S/.test(contextType)) {
                 setDataTable([]);
-                openModal('Both Device Item ID and Context Type are empty.<br/>Please fill one field at least.', "Search Failed");
+                openModal('Both Device Item ID and Context Type are empty.<br/>Please fill one field at least.', "Analyze Failed");
                 return;
             }
 
-            var ajaxData = {};
+            var startTime = -62167219200000;
+            var endTime = 32520455448000;
+
+            if (/\S/.test(startDate)) {
+                if (!isValidDate(startDate)) {
+                    openModal("The typing form of 'Period' is 'yyyy-MM-dd'.<br/>Please use this pattern.<br/><br/>ex) 2016-04-16", "Search Failed");
+                    return;
+                }
+                startTime = new Date(startDate).getTime() - 9*3600000; // 0:00:00 for KR timezone (GMT-9)
+            }
+            if (/\S/.test(endDate)) {
+                if (!isValidDate(endDate)) {
+                    openModal("The typing form of 'Period' is 'yyyy-MM-dd'.<br/>Please use this pattern.<br/><br/>ex) 2016-04-16", "Search Failed");
+                    return;
+                }
+                endTime = new Date(endDate).getTime() + 15*3600000 - 1; //0시 0분 0초 //23:59:59.999 for KR timezone (GMT-9)
+            }
+            if (endTime < startTime) {
+                openModal("The start time of period is larger than the end time of period.", "Analyze Failed");
+                return;
+            }
+
+            var ajaxData = {
+                start_period : startTime,
+                end_period: endTime
+            };
+
             if (!/\S/.test(itemID)) {
                 itemID = null;
             } else {

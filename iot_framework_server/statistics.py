@@ -12,13 +12,14 @@ from collections import Counter
 #     pass
 
 
-def get_statistics_dict(context_type, device_item_id=None, context_id=None, type=None, subtype=None,
+def get_statistics_dict(context_type, device_item_id=None, context_id=None,
+                        type=None, subtype=None, period=None,
                         statistics_type=['min', 'max', 'avg', 'var'], remove_values=True):
     db = db_manager.DbManager()
     statistics_dict = None
     if context_type == 'context':
         context_list = db.retrieve_context(device_item_id=device_item_id,
-                                           type=type, context_id=context_id)
+                                           type=type, context_id=context_id, period=period)
         # pprint(context_list)
         subtype_list = list()
         device_context_dict = dict()
@@ -89,7 +90,7 @@ def get_statistics_dict(context_type, device_item_id=None, context_id=None, type
 
     elif context_type == 'series' or context_type == 'series_context':
         series_context_list = db.retrieve_series_context(device_item_id=device_item_id,
-                                                         type=type, context_id=context_id)
+                                                         type=type, context_id=context_id, period=period)
         # pprint(series_context_list)
         context_type_list = list()
         device_series_context_dict = dict()
