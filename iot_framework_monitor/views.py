@@ -300,23 +300,23 @@ def statistics_detail_page(request, context_type, item_id, type, subtype=None):
             stat_info['subtype'] = ''
         else:
             stat_info['subtype'] = subtype
-        stat_info['unit'] = stat_data['unit']
-        stat_info['num'] = stat_data['num']
-        stat_info['min'] = stat_data['min']
-        stat_info['max'] = stat_data['max']
-        stat_info['avg'] = stat_data['avg']
-        stat_info['var'] = stat_data['var']
+        stat_info['unit'] = stat_data.get('unit')
+        stat_info['num'] = stat_data.get('num')
+        stat_info['min'] = stat_data.get('min')
+        stat_info['max'] = stat_data.get('max')
+        stat_info['avg'] = stat_data.get('avg')
+        stat_info['var'] = stat_data.get('var')
     elif context_type == 'series' or context_type == 'series_context':
         stat_data = stat_dict[item_id][type]
         stat_info['item_id'] = item_id
         stat_info['type'] = type
         stat_info['subtype'] = ''
-        stat_info['unit'] = stat_data['unit']
-        stat_info['num'] = stat_data['num']
-        stat_info['min'] = stat_data['min']
-        stat_info['max'] = stat_data['max']
-        stat_info['avg'] = stat_data['avg']
-        stat_info['var'] = stat_data['var']
+        stat_info['unit'] = stat_data.get('unit')
+        stat_info['num'] = stat_data.get('num')
+        stat_info['min'] = stat_data.get('min')
+        stat_info['max'] = stat_data.get('max')
+        stat_info['avg'] = stat_data.get('avg')
+        stat_info['var'] = stat_data.get('var')
     req_context['statistics_info'] = stat_info
     return render(request, 'monitor/statistics_detail.html', req_context)
 
